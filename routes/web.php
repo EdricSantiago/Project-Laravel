@@ -1,6 +1,7 @@
 <?php
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\AccountsController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -18,7 +19,11 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    Route::get('/dashboard', fn() => view('dashboard'))->name('dashboard');
+    Route::get('/homepage', [AccountsController::class, 'index'])->name('homepage');
+
+    Route::get('/account',          [AccountsController::class, 'show'])->name('account.show');
+    Route::post('/account/topup',   [AccountsController::class, 'topup'])->name('account.topup');
+    Route::post('/account/withdraw',[AccountsController::class, 'withdraw'])->name('account.withdraw');
 
     Route::get('/transaction', [TransactionController::class, 'index'])->name('transaction.index');
     Route::post('/transaction/deposit', [TransactionController::class, 'deposit'])->name('transaction.deposit');
