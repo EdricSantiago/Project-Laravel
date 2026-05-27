@@ -15,27 +15,13 @@ return new class extends Migration
             $table->id();
             $table->enum('type', ['deposit', 'withdraw', 'transfer']);
             $table->decimal('amount', 15, 2);
-
-            $table->foreignId('sender_id')
-                ->nullable()
-                ->constrained('accounts')
-                ->nullOnDelete();
-
-            $table->foreignId('receiver_id')
-                ->nullable()
-                ->constrained('accounts')
-                ->nullOnDelete();
-
-            $table->enum('status', ['success', 'failed', 'pending'])
-                ->default('success');
-                
+            $table->foreignId('sender_id')->nullable()->constrained('accounts')->nullOnDelete();
+            $table->foreignId('receiver_id')->nullable()->constrained('accounts')->nullOnDelete();
+            $table->enum('status', ['success', 'failed', 'pending'])->default('success');
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('transactions');
