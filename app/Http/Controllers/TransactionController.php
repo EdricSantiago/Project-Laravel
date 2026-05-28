@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Transaction;
+use App\Models\Account;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -50,6 +51,10 @@ class TransactionController extends Controller
 
     public function withdraw(Request $request): RedirectResponse
     {
+        if (!$request->session()->has('pin_verified')) {
+        return back()->withErrors(['error' => 'Anda wajib memverifikasi PIN terlebih dahulu.']);
+}
+        $request->session()->forget('pin_verified');
         $request->validate([
             'amount' => ['required', 'numeric', 'min:10000'],
         ]);
@@ -81,6 +86,10 @@ class TransactionController extends Controller
 
     public function transfer(Request $request): RedirectResponse
     {
+        if (!$request->session()->has('pin_verified')) {
+        return back()->withErrors(['error' => 'Anda wajib memverifikasi PIN terlebih dahulu.']);
+}
+        $request->session()->forget('pin_verified');
         $request->validate([
             'amount'             => ['required', 'numeric', 'min:10000'],
             'receiver_account'   => ['required', 'string'],
@@ -89,10 +98,11 @@ class TransactionController extends Controller
         $user        = Auth::user();
         $senderAcc   = Account::where('user_id', $user->id)->firstOrFail();
 
-        $receiverAcc = Account::where('account_number', $request->receiver_account)->first();
-        if (!$receiverAcc) {
-            return back()->withErrors(['receiver_account' => 'Nomor rekening tujuan tidak ditemukan.']);
-        }
+        $receiverUser = \App\Models\User::where('account_number', $request->receiver_account)->first();
+        if (!$receiverUser) {
+        return back()->withErrors(['receiver_account' => 'Nomor rekening tujuan tidak ditemukan.']);
+}
+        $receiverAcc = Account::where('user_id', $receiverUser->id)->first();
 
         if ($receiverAcc->id === $senderAcc->id) {
             return back()->withErrors(['receiver_account' => 'Tidak dapat transfer ke rekening sendiri.']);
