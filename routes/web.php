@@ -2,6 +2,7 @@
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\AccountsController;
+use App\Http\Controllers\SecurityController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -30,4 +31,15 @@ Route::middleware('auth')->group(function () {
     Route::post('/transaction/withdraw', [TransactionController::class, 'withdraw'])->name('transaction.withdraw');
     Route::post('/transaction/transfer', [TransactionController::class, 'transfer'])->name('transaction.transfer');
     Route::get('/transaction/history', [TransactionController::class, 'history'])->name('transaction.history');
+});
+
+Route::middleware('auth')->group(function () {
+        Route::prefix('security')->group(function () {
+        Route::post('/setup-pin', [SecurityController::class, 'setupPin'])->name('security.setup');
+        Route::post('/panic', [SecurityController::class, 'freezeAccount'])->name('security.panic');
+        Route::post('/change-pin', [SecurityController::class, 'changePin'])->name('security.change');
+        Route::post('/verify-pin', [SecurityController::class, 'verifyPin'])->name('security.verify');
+        Route::get('/status', [SecurityController::class, 'getSecurityStatus'])->name('security.status');
+    });
+
 });

@@ -17,7 +17,8 @@ return new class extends Migration
             $table->string('account_number', 16)->unique()->nullable();
             $table->string('password');
             $table->enum('status', ['active', 'inactive', 'suspended'])->default('inactive');
-            $table->string('pin', 6)->nullable()->comment('PIN transaksi terenkripsi');
+            $table->string('pin')->nullable()->comment('PIN transaksi terenkripsi');
+            $table->integer('failed_pin_attempts')->default(0);
             $table->timestamp('email_verified_at')->nullable();
             $table->rememberToken();
             $table->timestamps();

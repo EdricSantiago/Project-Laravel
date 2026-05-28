@@ -21,6 +21,7 @@ class User extends Authenticatable
         'password',
         'pin',
         'status',
+        'failed_pin_attempts',
     ];
 
     protected $hidden = [
