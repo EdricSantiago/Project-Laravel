@@ -4,43 +4,42 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Security; 
 
 class SecurityController extends Controller
 {
     public function setupPin(Request $request) {
-        $request->validate([
-            'pin' => 'required|numeric|digits:6'
-        ], [
-            'pin.digits' => 'PIN Harus terdiri Dari 6-digit Angka.'
-        ]);
+        $request->validate(['pin' => 'required|numeric|digits:6'], ['pin.digits' => 'PIN Harus 6-digit Angka.']);
 
         $user = Auth::user();
         $user->pin = Hash::make($request->pin); 
         $user->save();
 
-        return back()->with('success', 'PIN Berhasil Dibuat. Slay!');
+        Security::create(['user_id' => $user->id, 'action' => 'SETUP_PIN', 'ip_address' => $request->ip()]);
+
+        return back()->with('success', 'PIN Berhasil Dibuat. ');
     }
 
-    public function freezeAccount() {
+    public function freezeAccount(Request $request) {
         $user = Auth::user();
         $user->status = 'suspended'; 
         $user->save();
 
-        return back()->with('success', 'Akun Dibekukan, Semua Transaksi Diblokir. Panic mode activated!');
+        Security::create(['user_id' => $user->id, 'action' => 'ACCOUNT_FROZEN_PANIC', 'ip_address' => $request->ip()]);
+
+        return back()->with('success', 'Akun Dibekukan, Semua Transaksi Diblokir.');
     }
 
     public function changePin(Request $request) {
         $request->validate([
             'oldPin' => 'required',
             'newPin' => 'required|numeric|digits:6'
-        ], [
-            'newPin.digits' => 'PIN Baru Harus terdiri Dari 6-digit Angka.'
-        ]);
+        ], ['newPin.digits' => 'PIN Baru Harus 6-digit Angka.']);
 
         $user = Auth::user();
 
-        if ($user->status === 'suspended') return back()->withErrors(['error' => 'Akun sedang dibekukan. Tidak bisa mengganti PIN.']);
-        if (!$user->pin) return back()->withErrors(['error' => 'PIN Belum Setup, Silahkan Buat Pin Terlebih Dahulu']);
+        if ($user->status === 'suspended') return back()->withErrors(['error' => 'Akun sedang dibekukan.']);
+        if (!$user->pin) return back()->withErrors(['error' => 'PIN Belum Setup.']);
 
         if (!Hash::check($request->oldPin, $user->pin)) {
             $user->failed_pin_attempts += 1; 
@@ -48,9 +47,11 @@ class SecurityController extends Controller
             if ($user->failed_pin_attempts >= 3) {
                 $user->status = 'suspended'; 
                 $user->save();
-                return back()->withErrors(['error' => 'PIN Salah 3x, Akun Otomatis Dibekukan. Broke energy!']);
+                Security::create(['user_id' => $user->id, 'action' => 'AUTO_SUSPEND_WRONG_PIN_3X', 'ip_address' => $request->ip()]);
+                return back()->withErrors(['error' => 'PIN Salah 3x, Akun Otomatis Dibekukan. ']);
             }
             $user->save();
+            Security::create(['user_id' => $user->id, 'action' => 'FAILED_PIN_CHANGE', 'ip_address' => $request->ip()]);
             return back()->withErrors(['error' => 'PIN Lama Salah! Sisa percobaan: ' . (3 - $user->failed_pin_attempts)]);
         }
 
@@ -58,9 +59,9 @@ class SecurityController extends Controller
         $user->pin = Hash::make($request->newPin);
         $user->save();
 
+        Security::create(['user_id' => $user->id, 'action' => 'PIN_CHANGED', 'ip_address' => $request->ip()]);
         return back()->with('success', 'PIN Berhasil Diperbarui.');
     }
-
 
     public function verifyPin(Request $request) {
         $request->validate(['pin' => 'required']);
@@ -74,9 +75,11 @@ class SecurityController extends Controller
             if ($user->failed_pin_attempts >= 3) {
                 $user->status = 'suspended';
                 $user->save();
+                Security::create(['user_id' => $user->id, 'action' => 'AUTO_SUSPEND_WRONG_PIN_3X', 'ip_address' => $request->ip()]);
                 return back()->withErrors(['error' => 'Akun Otomatis Dibekukan : 3x salah PIN.']);
             }
             $user->save();
+            Security::create(['user_id' => $user->id, 'action' => 'FAILED_PIN_VERIFY', 'ip_address' => $request->ip()]);
             return back()->withErrors(['error' => 'PIN Salah! Sisa percobaan : ' . (3 - $user->failed_pin_attempts)]);
         }
 
@@ -84,6 +87,8 @@ class SecurityController extends Controller
         $user->save();
         
         $request->session()->put('pin_verified', true);
-        return back()->with('success', 'Autentikasi Berhasil. VIP access granted!');
+        Security::create(['user_id' => $user->id, 'action' => 'PIN_VERIFIED_FOR_TX', 'ip_address' => $request->ip()]);
+        
+        return back()->with('success', 'Autentikasi Berhasil. ');
     }
 }
