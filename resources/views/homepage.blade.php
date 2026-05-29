@@ -13,7 +13,6 @@
     <form method="POST" action="{{ route('logout') }}">
         @csrf
         <button type="submit" class="bg-white text-blue-700 px-4 py-1.5 rounded-lg text-sm font-medium">
-            Keluar
         </button>
     </form>
 </nav>
