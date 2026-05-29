@@ -13,13 +13,18 @@ return new class extends Migration
     {
         Schema::create('accounts', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->string('account_number')->unique();
             $table->decimal('balance', 15, 2)->default(0);
-            $table->timestamps();
+            $table->string('status')->default('active');
             $table->softDeletes();
+            $table->timestamps();
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         Schema::dropIfExists('accounts');

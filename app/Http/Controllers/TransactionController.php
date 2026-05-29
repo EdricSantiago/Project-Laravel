@@ -144,4 +144,35 @@ class TransactionController extends Controller
 
         return view('transaction.history', compact('user', 'account', 'transactions'));
     }
+
+    public function payInsurance(\Illuminate\Http\Request $request): \Illuminate\Http\RedirectResponse
+{
+    
+    return \Illuminate\Support\Facades\DB::transaction(function () {
+        $user = \Illuminate\Support\Facades\Auth::user();
+        
+       
+        $account = \App\Models\Account::where('user_id', $user->id)->lockForUpdate()->first();
+        
+        $amount = $account->asuransi_premium ?? 100000;
+
+        if ($account->balance < $amount) {
+            return redirect()->back()->with('error', 'Saldo tidak mencukupi untuk membayar Asuransi!');
+        }
+
+       
+        $account->decrement('balance', $amount);
+
+        
+        \App\Models\Transaction::create([
+            'sender_id' => $account->id,
+            'receiver_id' => null, 
+            'amount' => $amount,
+            'type' => 'withdraw',
+            'status' => 'success'
+        ]);
+
+        return redirect()->back()->with('success', 'Berhasil membayar Asuransi sebesar Rp ' . number_format($amount, 0, ',', '.'));
+    });
+}
 }

@@ -20,7 +20,8 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    Route::get('/homepage', [AccountsController::class, 'index'])->name('dashboard');
+    Route::get('/homepage', [AccountsController::class, 'index'])->name('homepage');
+    Route::get('/dashboard', [AccountsController::class, 'index'])->name('dashboard');
 
     Route::get('/account',          [AccountsController::class, 'show'])->name('account.show');
     Route::post('/account/topup',   [AccountsController::class, 'topup'])->name('account.topup');

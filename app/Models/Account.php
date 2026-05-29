@@ -10,9 +10,13 @@ class Account extends Model
 {
     use HasFactory, SoftDeletes;
 
+    // SEMUA PROPERTI DIGABUNG DI SINI (TIDAK ADA DUPLIKAT)
     protected $fillable = [
         'user_id',
-        'balance'
+        'account_number', 
+        'balance',
+        'status',         
+        'asuransi_premium', // <-- Kodingan asuransimu aman digabung ke sini
     ];
 
     protected $casts = [
