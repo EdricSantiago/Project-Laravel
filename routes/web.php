@@ -20,7 +20,7 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    Route::get('/homepage', [AccountsController::class, 'index'])->name('homepage');
+    Route::get('/homepage', [AccountsController::class, 'index'])->name('dashboard');
 
     Route::get('/account',          [AccountsController::class, 'show'])->name('account.show');
     Route::post('/account/topup',   [AccountsController::class, 'topup'])->name('account.topup');
@@ -31,6 +31,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/transaction/withdraw', [TransactionController::class, 'withdraw'])->name('transaction.withdraw');
     Route::post('/transaction/transfer', [TransactionController::class, 'transfer'])->name('transaction.transfer');
     Route::get('/transaction/history', [TransactionController::class, 'history'])->name('transaction.history');
+
+    Route::post('/transaction/pay-insurance', [TransactionController::class, 'payInsurance'])->name('transaction.payInsurance');
 });
 
 Route::middleware('auth')->group(function () {
