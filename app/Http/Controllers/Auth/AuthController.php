@@ -37,7 +37,7 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('homepage'))
+        return redirect()->intended(route('dashboard'))
             ->with('success', 'Selamat datang, ' . $user->name . '!');
     }
 
@@ -55,6 +55,7 @@ class AuthController extends Controller
             'no_hp'          => $request->no_hp,
             'nik'            => $request->nik,
             'password'       => Hash::make($request->password),
+            'pin'            => Hash::make($request->pin),
             'account_number' => User::generateAccountNumber(),
             'status'         => 'active',
         ]);
@@ -62,7 +63,7 @@ class AuthController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect()->route('homepage')
+        return redirect()->route('dashboard')
             ->with('success', 'Registrasi berhasil! Nomor rekening Anda: ' . $user->account_number);
     }
 
