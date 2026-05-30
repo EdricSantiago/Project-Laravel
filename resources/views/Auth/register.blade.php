@@ -71,9 +71,31 @@
                      <div class="mb-6">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Konfirmasi Password</label>
                             <input type="password" name="password_confirmation"
-                            class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm
+                            class="w-full border @error('password_confirmation') border-red-500 @else border-gray-300 @enderror
+                            rounded-lg px-4 py-2.5 text-sm
                             focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="Ulangi password" required>
+                     </div>
+                     
+                     {{-- PIN --}}
+                     <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">PIN Transaksi</label>
+                            <input type="password" name="pin" maxlength="6"
+                            class="w-full border @error('pin') border-red-500 @else border-gray-300 @enderror
+                            rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="6 digit angka" required>
+                            @error('pin') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                     </div>
+
+                     {{-- Konfirmasi PIN --}}
+                     <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Konfirmasi PIN</label>
+                            <input type="password" name="konfirmasi_pin"
+                            class="w-full border @error('konfirmasi_pin') border-red-500 @else border-gray-300 @enderror
+                            rounded-lg px-4 py-2.5 text-sm
+                            focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Ulangi PIN" required>
+                            @error('konfirmasi_pin') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                      </div>
 
                      <button type="submit"
