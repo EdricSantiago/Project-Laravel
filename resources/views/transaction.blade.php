@@ -47,6 +47,35 @@
         <p class="text-sm opacity-70 mt-1">No. Rekening: {{ $account?->account_number ?? '-' }}</p>
     </div>
 
+    {{--PIN Verification--}}
+    <div class="bg-white rounded-2xl shadow p-6 mb-6 border-l-4 {{ session()->has('pin_verified') ? 'border-green-500' : 'border-amber-500' }}">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+                <h3 class="font-bold text-sm {{ session()->has('pin_verified') ? 'text-green-600' : 'text-amber-600' }} flex items-center gap-1.5">
+                    <span>{{ session()->has('pin_verified') ? 'Sesi Anda Terautentikasi' : 'Sesi Anda Belum Diverifikasi' }}</span>
+                </h3>
+                <p class="text-xs text-gray-500 mt-0.5">
+                    {{ session()->has('pin_verified') ? 'PIN TERVERIFIKASI. Berlaku untuk 1x tindakan transaksi.' : 'Masukkan 6-digit PIN transaksi Anda terlebih dahulu untuk melakukan transaksi.' }}
+                </p>
+            </div>
+            
+            @if(!session()->has('pin_verified'))
+                <form method="POST" action="{{ route('security.verify') }}" class="flex gap-2 w-full md:w-auto">
+                    @csrf
+                    <input type="password" name="pin" maxlength="6" placeholder="•••••" required
+                        class="border border-gray-300 rounded-lg px-4 py-2 text-sm text-center tracking-widest focus:ring-2 focus:ring-amber-500 outline-none w-32 bg-gray-50">
+                    <button type="submit" class="bg-amber-500 hover:bg-amber-600 text-white px-5 py-2 rounded-lg text-sm font-bold transition-all shadow-sm whitespace-nowrap">
+                        Verify Now
+                    </button>
+                </form>
+            @else
+                <span class="bg-green-100 text-green-700 px-3 py-1.5 rounded-lg text-xs font-extrabold shadow-sm flex items-center gap-1 animate-pulse">
+                    Autentikasi PIN Berhasil
+                </span>
+            @endif
+        </div>
+    </div>
+
     {{-- Aksi Transaksi --}}
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
 
@@ -108,7 +137,7 @@
         @csrf
             <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded transition">
             Bayar Sekarang
-           </button>
+        </button>
         </form>
     </div>
 
