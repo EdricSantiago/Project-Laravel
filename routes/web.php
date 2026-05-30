@@ -38,8 +38,8 @@ Route::middleware('auth')->group(function () {
 Route::middleware('auth')->group(function () {
         Route::prefix('security')->group(function () {
         Route::post('/setup-pin', [SecurityController::class, 'setupPin'])->name('security.setup');
-        Route::post('/panic', [SecurityController::class, 'freezeAccount'])->name('security.panic');
-        Route::post('/change-pin', [SecurityController::class, 'changePin'])->name('security.change');
+        Route::patch('/panic', [SecurityController::class, 'freezeAccount'])->name('security.panic');
+        Route::put('/change-pin', [SecurityController::class, 'changePin'])->name('security.change');
         Route::post('/verify-pin', [SecurityController::class, 'verifyPin'])->name('security.verify');
         Route::get('/status', [SecurityController::class, 'getSecurityStatus'])->name('security.status');
     });
