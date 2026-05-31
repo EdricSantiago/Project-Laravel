@@ -22,12 +22,12 @@
         @endif
 
         <div class="bg-white rounded shadow p-6">
-            <form action="{{ route('pinjaman.update', $loan) }}" method="POST">
+            <form action="{{ route('pinjaman.update', $pinjaman) }}" method="POST">
                 @csrf @method('PUT')
 
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah</label>
-                    <input type="number" name="amount" value="{{ old('amount', $loan->amount) }}"
+                    <input type="number" name="amount" value="{{ old('amount', $pinjaman->amount) }}"
                         class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
 
@@ -35,7 +35,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tenor</label>
                     <select name="tenor_months" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                         @foreach([3, 6, 12, 24, 36] as $tenor)
-                        <option value="{{ $tenor }}" {{ old('tenor_months', $loan->tenor_months) == $tenor ? 'selected' : '' }}>
+                        <option value="{{ $tenor }}" {{ old('tenor_months', $pinjaman->tenor_months) == $tenor ? 'selected' : '' }}>
                             {{ $tenor }} Bulan
                         </option>
                         @endforeach
@@ -44,12 +44,12 @@
 
                 <div class="mb-6">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tujuan</label>
-                    <input type="text" name="purpose" value="{{ old('purpose', $loan->purpose) }}"
+                    <input type="text" name="purpose" value="{{ old('purpose', $pinjaman->purpose) }}"
                         class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
 
                 <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded text-sm font-medium">Simpan</button>
-                <a href="{{ route('pinjaman.show', $loan) }}" class="block text-center w-full mt-2 border border-gray-400 text-gray-600 hover:bg-gray-50 py-2 rounded text-sm">Batal</a>
+                <a href="{{ route('pinjaman.show', $pinjaman) }}" class="block text-center w-full mt-2 border border-gray-400 text-gray-600 hover:bg-gray-50 py-2 rounded text-sm">Batal</a>
             </form>
         </div>
 

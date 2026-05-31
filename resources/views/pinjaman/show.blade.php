@@ -17,51 +17,51 @@
             <table class="w-full text-sm">
                 <tr class="border-b">
                     <th class="px-4 py-3 text-left text-gray-600 w-1/3">Tujuan</th>
-                    <td class="px-4 py-3 text-gray-800">{{ $loan->purpose }}</td>
+                    <td class="px-4 py-3 text-gray-800">{{ $pinjaman->purpose }}</td>
                 </tr>
                 <tr class="border-b">
                     <th class="px-4 py-3 text-left text-gray-600">Jumlah</th>
-                    <td class="px-4 py-3 text-gray-800">{{ $loan->formatted_amount }}</td>
+                    <td class="px-4 py-3 text-gray-800">{{ $pinjaman->formatted_amount }}</td>
                 </tr>
                 <tr class="border-b">
                     <th class="px-4 py-3 text-left text-gray-600">Tenor</th>
-                    <td class="px-4 py-3 text-gray-800">{{ $loan->tenor_months }} bulan</td>
+                    <td class="px-4 py-3 text-gray-800">{{ $pinjaman->tenor_months }} bulan</td>
                 </tr>
                 <tr class="border-b">
                     <th class="px-4 py-3 text-left text-gray-600">Bunga</th>
-                    <td class="px-4 py-3 text-gray-800">{{ $loan->interest_rate }}% / bulan</td>
+                    <td class="px-4 py-3 text-gray-800">{{ $pinjaman->interest_rate }}% / bulan</td>
                 </tr>
                 <tr class="border-b">
                     <th class="px-4 py-3 text-left text-gray-600">Cicilan/Bulan</th>
-                    <td class="px-4 py-3 text-gray-800">{{ $loan->formatted_monthly_installment }}</td>
+                    <td class="px-4 py-3 text-gray-800">{{ $pinjaman->formatted_monthly_installment }}</td>
                 </tr>
                 <tr class="border-b">
                     <th class="px-4 py-3 text-left text-gray-600">Total Bayar</th>
-                    <td class="px-4 py-3 text-gray-800">{{ $loan->formatted_total_repayment }}</td>
+                    <td class="px-4 py-3 text-gray-800">{{ $pinjaman->formatted_total_repayment }}</td>
                 </tr>
                 <tr class="border-b">
                     <th class="px-4 py-3 text-left text-gray-600">Status</th>
                     <td class="px-4 py-3">
                         <span class="px-2 py-1 rounded text-xs font-medium
-                        {{ $loan->status === 'approved' ? 'bg-green-100 text-green-700' : '' }}
-                        {{ $loan->status === 'pending' ? 'bg-yellow-100 text-yellow-700' : '' }}
-                        {{ $loan->status === 'rejected' ? 'bg-red-100 text-red-700' : '' }}
-                        {{ $loan->status === 'lunas' ? 'bg-blue-100 text-blue-700' : '' }}
-                    ">{{ $loan->status_label }}</span>
+                        {{ $pinjaman->status === 'approved' ? 'bg-green-100 text-green-700' : '' }}
+                        {{ $pinjaman->status === 'pending' ? 'bg-yellow-100 text-yellow-700' : '' }}
+                        {{ $pinjaman->status === 'rejected' ? 'bg-red-100 text-red-700' : '' }}
+                        {{ $pinjaman->status === 'lunas' ? 'bg-blue-100 text-blue-700' : '' }}
+                    ">{{ $pinjaman->status_label }}</span>
                     </td>
                 </tr>
                 <tr>
                     <th class="px-4 py-3 text-left text-gray-600">Tanggal</th>
-                    <td class="px-4 py-3 text-gray-800">{{ $loan->created_at->format('d M Y') }}</td>
+                    <td class="px-4 py-3 text-gray-800">{{ $pinjaman->created_at->format('d M Y') }}</td>
                 </tr>
             </table>
         </div>
 
         <div class="flex gap-2">
             <a href="{{ route('pinjaman.index') }}" class="border border-gray-400 text-gray-600 hover:bg-gray-50 px-4 py-2 rounded text-sm">← Kembali</a>
-            @if($loan->status === 'pending')
-            <a href="{{ route('pinjaman.edit', $loan) }}" class="border border-blue-500 text-blue-600 hover:bg-blue-50 px-4 py-2 rounded text-sm">Edit</a>
-            <form action="{{ route('pinjaman.destroy', $loan) }}" method="POST" class="inline"
+            @if($pinjaman->status === 'pending')
+            <a href="{{ route('pinjaman.edit', $pinjaman) }}" class="border border-blue-500 text-blue-600 hover:bg-blue-50 px-4 py-2 rounded text-sm">Edit</a>
+            <form action="{{ route('pinjaman.destroy', $pinjaman) }}" method="POST" class="inline"
                 onsubmit="return confirm('Yakin hapus?')">
                 @csrf @method('DELETE')
                 <button class="border border-red-400 text-red-600 hover:bg-red-50 px-4 py-2 rounded text-sm">Hapus</button>
