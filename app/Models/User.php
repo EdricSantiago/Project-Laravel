@@ -50,4 +50,9 @@ class User extends Authenticatable
     {
         return $this->status === 'active';
     }
+
+    public function account()
+{
+    return $this->hasOne(Account::class);
+}
 }
