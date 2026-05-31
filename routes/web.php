@@ -3,6 +3,7 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\AccountsController;
 use App\Http\Controllers\SecurityController;
+use App\Http\Controllers\PinjamanController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -21,6 +22,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     Route::get('/homepage', [AccountsController::class, 'index'])->name('dashboard');
+
+    Route::resource('/pinjaman', PinjamanController::class);
 
     Route::get('/account',          [AccountsController::class, 'show'])->name('account.show');
     Route::post('/account/topup',   [AccountsController::class, 'topup'])->name('account.topup');
@@ -42,6 +45,7 @@ Route::middleware('auth')->group(function () {
         Route::put('/change-pin', [SecurityController::class, 'changePin'])->name('security.change');
         Route::post('/verify-pin', [SecurityController::class, 'verifyPin'])->name('security.verify');
         Route::get('/status', [SecurityController::class, 'getSecurityStatus'])->name('security.status');
+        
     });
 
 });

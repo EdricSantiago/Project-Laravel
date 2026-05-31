@@ -60,6 +60,11 @@ class AuthController extends Controller
             'status'         => 'active',
         ]);
 
+        \App\Models\Account::create([
+        'user_id' => $user->id,
+        'balance' => 0,
+        ]);
+
         Auth::login($user);
         $request->session()->regenerate();
 
