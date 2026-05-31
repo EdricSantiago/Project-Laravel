@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Homepage — MyABC</title>
+    <title>Homepage — Bank Untar</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 min-h-screen">
 
-<nav class="bg-blue-700 text-white px-6 py-4 flex justify-between items-center">
-    <h1 class="text-xl font-bold">MyABC</h1>
+<nav class="bg-red-700 text-white px-6 py-4 flex justify-between items-center">
+    <h1 class="text-xl font-bold">Bank Untar</h1>
     <form method="POST" action="{{ route('logout') }}">
         @csrf
-        <button type="submit" class="bg-white text-blue-700 px-4 py-1.5 rounded-lg text-sm font-medium">
+        <button type="submit" class="bg-white text-red-700 px-4 py-1.5 rounded-lg text-sm font-medium">
             Keluar
         </button>
     </form>
@@ -42,7 +42,7 @@
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="bg-blue-600 text-white rounded-2xl p-6">
+        <div class="bg-red-600 text-white rounded-2xl p-6">
             <p class="text-sm opacity-80">Nomor Rekening</p>
             <p class="text-xl font-bold mt-1">{{ $user->account_number }}</p>
         </div>
@@ -85,11 +85,11 @@
                     @method('PUT')
                     <div class="mb-2">
                         <input type="password" name="oldPin" placeholder="Masukkan PIN Lama Anda" required 
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 text-center tracking-widest">
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-red-500 text-center tracking-widest">
                     </div>
                     <div class="mb-3">
                         <input type="password" name="newPin" placeholder="Buat PIN Baru (6 digit Angka)" required maxlength="6" 
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 text-center tracking-widest">
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-red-500 text-center tracking-widest">
                     </div>
                     <button type="submit" class="w-full bg-gray-800 text-white rounded-lg py-2.5 text-sm font-bold hover:bg-black transition-all shadow">
                         Perbarui PIN 
