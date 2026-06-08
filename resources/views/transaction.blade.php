@@ -11,7 +11,7 @@
 <nav class="bg-red-700 text-white px-6 py-4 flex justify-between items-center">
     <h1 class="text-xl font-bold">Bank Untar</h1>
     <div class="flex gap-3 items-center">
-        <a href="{{ route('dashboard') }}" class="text-sm hover:underline">Dashboard</a>
+        <a href="{{ route('homepage') }}" class="text-sm hover:underline">Homepage</a>
         <form method="POST" action="{{ route('logout') }}">
             @csrf
             <button type="submit" class="bg-white text-red-700 px-4 py-1.5 rounded-lg text-sm font-medium">
