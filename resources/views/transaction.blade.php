@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Transaksi — Digital Banking</title>
+    <title>Transaksi — Bank Untar</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 min-h-screen">
 
-<nav class="bg-blue-700 text-white px-6 py-4 flex justify-between items-center">
-    <h1 class="text-xl font-bold">Digital Banking</h1>
+<nav class="bg-red-700 text-white px-6 py-4 flex justify-between items-center">
+    <h1 class="text-xl font-bold">Bank Untar</h1>
     <div class="flex gap-3 items-center">
         <a href="{{ route('dashboard') }}" class="text-sm hover:underline">Dashboard</a>
         <form method="POST" action="{{ route('logout') }}">
             @csrf
-            <button type="submit" class="bg-white text-blue-700 px-4 py-1.5 rounded-lg text-sm font-medium">
+            <button type="submit" class="bg-white text-red-700 px-4 py-1.5 rounded-lg text-sm font-medium">
                 Keluar
             </button>
         </form>
@@ -39,12 +39,41 @@
     @endif
 
     {{-- Info Saldo --}}
-    <div class="bg-blue-600 text-white rounded-2xl p-6 mb-6">
+    <div class="bg-red-600 text-white rounded-2xl p-6 mb-6">
         <p class="text-sm opacity-80">Saldo Rekening</p>
         <p class="text-3xl font-bold mt-1">
             Rp {{ number_format($account?->balance ?? 0, 0, ',', '.') }}
         </p>
         <p class="text-sm opacity-70 mt-1">No. Rekening: {{ $account?->account_number ?? '-' }}</p>
+    </div>
+
+    {{--PIN Verification--}}
+    <div class="bg-white rounded-2xl shadow p-6 mb-6 border-l-4 {{ session()->has('pin_verified') ? 'border-green-500' : 'border-amber-500' }}">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+                <h3 class="font-bold text-sm {{ session()->has('pin_verified') ? 'text-green-600' : 'text-amber-600' }} flex items-center gap-1.5">
+                    <span>{{ session()->has('pin_verified') ? 'Sesi Anda Terautentikasi' : 'Sesi Anda Belum Diverifikasi' }}</span>
+                </h3>
+                <p class="text-xs text-gray-500 mt-0.5">
+                    {{ session()->has('pin_verified') ? 'PIN TERVERIFIKASI. Berlaku untuk 1x tindakan transaksi.' : 'Masukkan 6-digit PIN transaksi Anda terlebih dahulu untuk melakukan transaksi.' }}
+                </p>
+            </div>
+            
+            @if(!session()->has('pin_verified'))
+                <form method="POST" action="{{ route('security.verify') }}" class="flex gap-2 w-full md:w-auto">
+                    @csrf
+                    <input type="password" name="pin" maxlength="6" placeholder="•••••" required
+                        class="border border-gray-300 rounded-lg px-4 py-2 text-sm text-center tracking-widest focus:ring-2 focus:ring-amber-500 outline-none w-32 bg-gray-50">
+                    <button type="submit" class="bg-amber-500 hover:bg-amber-600 text-white px-5 py-2 rounded-lg text-sm font-bold transition-all shadow-sm whitespace-nowrap">
+                        Verify Now
+                    </button>
+                </form>
+            @else
+                <span class="bg-green-100 text-green-700 px-3 py-1.5 rounded-lg text-xs font-extrabold shadow-sm flex items-center gap-1 animate-pulse">
+                    Autentikasi PIN Berhasil
+                </span>
+            @endif
+        </div>
     </div>
 
     {{-- Aksi Transaksi --}}
@@ -56,7 +85,7 @@
             <form method="POST" action="{{ route('transaction.deposit') }}">
                 @csrf
                 <input type="number" name="amount" placeholder="Jumlah (min Rp 10.000)"
-                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-red-500"
                     min="10000" required>
                 <button type="submit"
                     class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-lg text-sm transition">
@@ -71,7 +100,7 @@
             <form method="POST" action="{{ route('transaction.withdraw') }}">
                 @csrf
                 <input type="number" name="amount" placeholder="Jumlah (min Rp 10.000)"
-                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-red-500"
                     min="10000" required>
                 <button type="submit"
                     class="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-lg text-sm transition">
@@ -86,13 +115,13 @@
             <form method="POST" action="{{ route('transaction.transfer') }}">
                 @csrf
                 <input type="text" name="receiver_account" placeholder="No. Rekening Tujuan"
-                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-red-500"
                     required>
                 <input type="number" name="amount" placeholder="Jumlah (min Rp 10.000)"
-                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-red-500"
                     min="10000" required>
                 <button type="submit"
-                    class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 rounded-lg text-sm transition">
+                    class="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-lg text-sm transition">
                     Transfer
                 </button>
             </form>

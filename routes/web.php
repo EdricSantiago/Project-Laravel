@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\AccountsController;
 use App\Http\Controllers\SecurityController;
+use App\Http\Controllers\PinjamanController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -23,6 +24,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/homepage', [AccountsController::class, 'index'])->name('homepage');
     Route::get('/dashboard', [AccountsController::class, 'index'])->name('dashboard');
+
+    Route::resource('/pinjaman', PinjamanController::class);
 
     Route::get('/account',          [AccountsController::class, 'show'])->name('account.show');
     Route::post('/account/topup',   [AccountsController::class, 'topup'])->name('account.topup');

@@ -33,7 +33,7 @@ class SecurityController extends Controller
     public function changePin(Request $request) {
         $request->validate([
             'oldPin' => 'required',
-            'newPin' => 'required|numeric|digits:6'
+            'newPin' => 'required|numeric|digits:6|different:oldPin'
         ], ['newPin.digits' => 'PIN Baru Harus 6-digit Angka.']);
 
         $user = Auth::user();

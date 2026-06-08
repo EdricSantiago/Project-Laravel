@@ -14,8 +14,8 @@ return new class extends Migration
     Schema::create('security', function (Blueprint $table) {
         $table->id();
         $table->foreignId('user_id')->constrained()->onDelete('cascade');
-        $table->string('action'); // Contoh: 'LOGIN_SUCCESS', 'LOGIN_FAILED'
-        $table->string('ip_address'); // Nyatet IP pelaku
+        $table->string('action'); 
+        $table->string('ip_address');
         $table->timestamps();
     });
 }

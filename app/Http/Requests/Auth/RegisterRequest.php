@@ -15,6 +15,8 @@ class RegisterRequest extends FormRequest
             'email'                 => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'no_hp'                 => ['required', 'string', 'regex:/^(\+62|62|0)8[1-9][0-9]{6,10}$/', 'unique:users'],
             'nik'                   => ['required', 'digits:16', 'unique:users'],
+            'pin'                   => ['required', 'numeric', 'digits:6'],
+            'konfirmasi_pin'       => ['required', 'numeric', 'digits:6', 'same:pin'],
             'password'              => ['required', 'string', 'min:8', 'confirmed'],
             'password_confirmation' => ['required'],
         ];
@@ -31,6 +33,8 @@ class RegisterRequest extends FormRequest
             'nik.unique'         => 'NIK sudah terdaftar.',
             'password.min'       => 'Password minimal 8 karakter.',
             'password.confirmed' => 'Konfirmasi password tidak cocok.',
+            'pin.digits'         => 'PIN  harus terdiri dari 6 digit angka.',
+            'konfirmasi_pin.same' => 'Konfirmasi PIN tidak cocok.',
         ];
     }
 }

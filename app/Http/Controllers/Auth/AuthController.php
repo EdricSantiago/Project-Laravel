@@ -37,7 +37,7 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('homepage'))
+        return redirect()->intended(route('dashboard'))
             ->with('success', 'Selamat datang, ' . $user->name . '!');
     }
 
@@ -60,6 +60,7 @@ class AuthController extends Controller
             'nik'            => $request->nik,
             'password'       => Hash::make($request->password),
             'account_number' => $noRekening, // Pakai variabel $noRekening
+            'pin'            => Hash::make($request->pin),
             'status'         => 'active',
         ]);
 

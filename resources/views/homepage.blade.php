@@ -3,16 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Homepage — MyABC</title>
+    <title>Homepage — Bank Untar</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 min-h-screen">
 
-<nav class="bg-blue-700 text-white px-6 py-4 flex justify-between items-center">
-    <h1 class="text-xl font-bold">MyABC</h1>
+<nav class="bg-red-700 text-white px-6 py-4 flex justify-between items-center">
+    <h1 class="text-xl font-bold">Bank Untar</h1>
     <form method="POST" action="{{ route('logout') }}">
         @csrf
-        <button type="submit" class="bg-white text-blue-700 px-4 py-1.5 rounded-lg text-sm font-medium">
+        <button type="submit" class="bg-white text-red-700 px-4 py-1.5 rounded-lg text-sm font-medium">
+            Keluar
         </button>
     </form>
 </nav>
@@ -41,7 +42,7 @@
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="bg-blue-600 text-white rounded-2xl p-6">
+        <div class="bg-red-600 text-white rounded-2xl p-6">
             <p class="text-sm opacity-80">Nomor Rekening</p>
             <p class="text-xl font-bold mt-1">{{ $user->account_number }}</p>
         </div>
@@ -54,6 +55,62 @@
             <p class="font-semibold text-gray-800 mt-1">{{ $user->no_hp }}</p>
         </div>
     </div>
+</div>
+{{-- Security Center --}}
+    <div class="mt-8">
+        <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-3">
+            <span>Security Center </span>
+            <span class="text-xs px-2.5 py-1 rounded-full font-bold capitalize {{ $user->status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                Status Akun: {{ $user->status }}
+            </span>
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
+            {{-- Ubah PIN --}}
+            <div class="bg-white rounded-2xl shadow p-6 border border-gray-100">
+                <h3 class="font-semibold text-gray-700 mb-3 text-sm">Ubah PIN </h3>
+                @if($errors->any())
+                    <div class="bg-red-100 border border-red-200 text-red-700 px-3 py-2 rounded-lg mb-4 text-xs font-medium animate-pulse">
+                        {{ $errors->first() }}
+                    </div>
+                @endif
+
+                @if(session('success'))
+                    <div class="bg-green-100 border border-green-200 text-green-700 px-3 py-2 rounded-lg mb-4 text-xs font-medium">
+                        {{ session('success') }}
+                    </div>
+                @endif
+                <form method="POST" action="{{ route('security.change') }}">
+                    @csrf
+                    @method('PUT')
+                    <div class="mb-2">
+                        <input type="password" name="oldPin" placeholder="Masukkan PIN Lama Anda" required 
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-red-500 text-center tracking-widest">
+                    </div>
+                    <div class="mb-3">
+                        <input type="password" name="newPin" placeholder="Buat PIN Baru (6 digit Angka)" required maxlength="6" 
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-red-500 text-center tracking-widest">
+                    </div>
+                    <button type="submit" class="w-full bg-gray-800 text-white rounded-lg py-2.5 text-sm font-bold hover:bg-black transition-all shadow">
+                        Perbarui PIN 
+                    </button>
+                </form>
+            </div>
+
+            {{-- Freeze Account --}}
+            <div class="bg-red-50 rounded-2xl shadow p-6 border border-red-100 flex flex-col justify-center items-center text-center">
+                <h3 class="font-bold text-red-700 mb-1 text-base">Freeze Account </h3>
+                <p class="text-xs text-red-500 mb-4 max-w-xs">Lakukan tindakan ini jika Anda merasa akun Anda telah diretas atau HP Anda hilang.<br>(Jika ingin membuka blokir akun, silahkan hubungi customer service).</p>
+                <form method="POST" action="{{ route('security.panic') }}">
+                    @csrf
+                    @method('PATCH')
+                    <button type="submit" onclick="return confirm('Apakah Anda yakin ingin MEMBEKUKAN akun ini? Semua aktivitas keuangan akan diblokir!')" 
+                            class="bg-red-600 text-white rounded-full px-6 py-2.5 font-bold shadow-md hover:bg-red-700 hover:scale-105 transition-all text-sm tracking-wide">
+                        FREEZE
+                    </button>
+                </form>
+            </div>
+        </div>
 </div>
     <script>
         let visible = true;
