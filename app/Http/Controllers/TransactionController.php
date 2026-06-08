@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Transaction;
 use App\Models\Account;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class TransactionController extends Controller
@@ -14,7 +17,6 @@ class TransactionController extends Controller
     public function index(): View
     {
         $user = Auth::user();
-
         $account = Account::where('user_id', $user->id)->first();
 
         $transactions = Transaction::where('sender_id', $account?->id)
@@ -52,9 +54,10 @@ class TransactionController extends Controller
     public function withdraw(Request $request): RedirectResponse
     {
         if (!$request->session()->has('pin_verified')) {
-        return back()->withErrors(['error' => 'Anda wajib memverifikasi PIN terlebih dahulu.']);
-}
+            return back()->withErrors(['error' => 'Anda wajib memverifikasi PIN terlebih dahulu.']);
+        }
         $request->session()->forget('pin_verified');
+
         $request->validate([
             'amount' => ['required', 'numeric', 'min:10000'],
         ]);
@@ -87,21 +90,23 @@ class TransactionController extends Controller
     public function transfer(Request $request): RedirectResponse
     {
         if (!$request->session()->has('pin_verified')) {
-        return back()->withErrors(['error' => 'Anda wajib memverifikasi PIN terlebih dahulu.']);
-}
+            return back()->withErrors(['error' => 'Anda wajib memverifikasi PIN terlebih dahulu.']);
+        }
         $request->session()->forget('pin_verified');
+
         $request->validate([
-            'amount'             => ['required', 'numeric', 'min:10000'],
-            'receiver_account'   => ['required', 'string'],
+            'amount'           => ['required', 'numeric', 'min:10000'],
+            'receiver_account' => ['required', 'string'],
         ]);
 
-        $user        = Auth::user();
-        $senderAcc   = Account::where('user_id', $user->id)->firstOrFail();
+        $user      = Auth::user();
+        $senderAcc = Account::where('user_id', $user->id)->firstOrFail();
 
         $receiverUser = \App\Models\User::where('account_number', $request->receiver_account)->first();
         if (!$receiverUser) {
-        return back()->withErrors(['receiver_account' => 'Nomor rekening tujuan tidak ditemukan.']);
-}
+            return back()->withErrors(['receiver_account' => 'Nomor rekening tujuan tidak ditemukan.']);
+        }
+
         $receiverAcc = Account::where('user_id', $receiverUser->id)->first();
 
         if ($receiverAcc->id === $senderAcc->id) {
@@ -145,34 +150,60 @@ class TransactionController extends Controller
         return view('transaction.history', compact('user', 'account', 'transactions'));
     }
 
-    public function payInsurance(\Illuminate\Http\Request $request): \Illuminate\Http\RedirectResponse
-{
-    
-    return \Illuminate\Support\Facades\DB::transaction(function () {
-        $user = \Illuminate\Support\Facades\Auth::user();
-        
-       
-        $account = \App\Models\Account::where('user_id', $user->id)->lockForUpdate()->first();
-        
-        $amount = $account->asuransi_premium ?? 100000;
+    public function payInsurance(): RedirectResponse
+    {
+        return DB::transaction(function () {
+            $user    = Auth::user();
+            $account = Account::where('user_id', $user->id)->lockForUpdate()->first();
+            $amount  = $account->asuransi_premium ?? 100000;
 
-        if ($account->balance < $amount) {
-            return redirect()->back()->with('error', 'Saldo tidak mencukupi untuk membayar Asuransi!');
-        }
+            if ($account->balance < $amount) {
+                return redirect()->back()->with('error', 'Saldo tidak mencukupi untuk membayar Asuransi!');
+            }
 
-       
-        $account->decrement('balance', $amount);
+            $account->decrement('balance', $amount);
+            $account->asuransi_last_paid = now()->toDateString();
+            $account->save();
 
-        
-        \App\Models\Transaction::create([
-            'sender_id' => $account->id,
-            'receiver_id' => null, 
-            'amount' => $amount,
-            'type' => 'withdraw',
-            'status' => 'success'
-        ]);
+            Transaction::create([
+                'sender_id'   => $account->id,
+                'receiver_id' => null,
+                'amount'      => $amount,
+                'type'        => 'withdraw',
+                'status'      => 'success',
+            ]);
 
-        return redirect()->back()->with('success', 'Berhasil membayar Asuransi sebesar Rp ' . number_format($amount, 0, ',', '.'));
-    });
-}
+            return redirect()->back()
+                ->with('success', 'Berhasil membayar Asuransi sebesar Rp ' . number_format($amount, 0, ',', '.'));
+        });
+    }
+
+    // ─── EXPORT PDF ─────────────────────────────────────────────────────────────
+    /**
+     * Export riwayat transaksi user ke PDF.
+     * Route: GET /transaction/export-pdf
+     */
+    public function exportPdf(Request $request): Response
+    {
+        $user    = Auth::user();
+        $account = Account::where('user_id', $user->id)->firstOrFail();
+
+        // Ambil semua transaksi user, load relasi sender/receiver
+        $transactions = Transaction::with(['sender.user', 'receiver.user'])
+            ->where('sender_id', $account->id)
+            ->orWhere('receiver_id', $account->id)
+            ->latest()
+            ->get();
+
+        $pdf = Pdf::loadView('pdf.transaction-history', [
+            'user'         => $user,
+            'account'      => $account,
+            'transactions' => $transactions,
+            'generated_at' => now()->format('d M Y, H:i'),
+        ])->setPaper('a4', 'portrait');
+
+        $filename = 'mutasi-rekening-' . $account->account_number . '-' . now()->format('Ymd') . '.pdf';
+
+        return $pdf->download($filename);
+    }
 }
