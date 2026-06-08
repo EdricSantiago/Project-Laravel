@@ -18,6 +18,14 @@ class AccountsController extends Controller
         return view('homepage', compact('user', 'account'));
     }
 
+    public function security(): View
+    {
+        $user    = Auth::user();
+        $account = Account::where('user_id', $user->id)->first();
+
+        return view('security', compact('user', 'account'));
+    }
+
     public function show(): View
     {
         $user    = Auth::user();

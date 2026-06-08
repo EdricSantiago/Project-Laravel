@@ -37,7 +37,7 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard'))
+        return redirect()->intended(route('homepage'))
             ->with('success', 'Selamat datang, ' . $user->name . '!');
     }
 
@@ -75,7 +75,7 @@ class AuthController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect()->route('dashboard')
+        return redirect()->route('homepage')
             ->with('success', 'Registrasi berhasil! Nomor rekening Anda: ' . $noRekening);
     }
 
