@@ -152,6 +152,10 @@ class TransactionController extends Controller
 
     public function payInsurance(): RedirectResponse
     {
+        if (!$request->session()->has('pin_verified')) {
+            return back()->withErrors(['error' => 'Anda wajib memverifikasi PIN terlebih dahulu.']);
+        }
+        $request->session()->forget('pin_verified');
         return DB::transaction(function () {
             $user    = Auth::user();
             $account = Account::where('user_id', $user->id)->lockForUpdate()->first();
