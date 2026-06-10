@@ -147,7 +147,7 @@ class TransactionController extends Controller
             ->latest()
             ->get();
 
-        return view('transaction.history', compact('user', 'account', 'transactions'));
+        return view('transaction', compact('user', 'account', 'transactions'));
     }
 
     public function payInsurance(): RedirectResponse
