@@ -107,7 +107,7 @@ class TransactionController extends Controller
             'receiver_account' => ['required', 'string'],
         ]);
 
-        $user      = Auth::user();
+        $user = Auth::user();
         if ($user->status === 'suspended') {
             return back()->withErrors(['error' => 'Akun Anda dibekukan. Transaksi tidak dapat dilakukan.']);
         }
@@ -149,15 +149,25 @@ class TransactionController extends Controller
             ->with('success', 'Transfer berhasil! Rp ' . number_format($request->amount, 0, ',', '.') . ' dikirim.');
     }
 
-    public function history(): View
+    public function history(Request $request)
     {
         $user    = Auth::user();
         $account = Account::where('user_id', $user->id)->first();
 
-        $transactions = Transaction::where('sender_id', $account?->id)
-            ->orWhere('receiver_id', $account?->id)
-            ->latest()
-            ->get();
+        $transactions = Transaction::where(function($q) use ($account) {
+            $q->where('sender_id', $account?->id)
+            ->orWhere('receiver_id', $account?->id);
+        });
+
+        if ($request->filled('type')) {
+            $transactions->where('type', $request->type);
+        }
+
+        if ($request->filled('start_date') && $request->filled('end_date')) {
+            $transactions->whereBetween('created_at', [$request->start_date, $request->end_date]);
+        }
+
+        $transactions = $transactions->latest()->get();
 
         return view('transaction', compact('user', 'account', 'transactions'));
     }
