@@ -34,6 +34,10 @@ class TransactionController extends Controller
         ]);
 
         $user    = Auth::user();
+        if ($user->status === 'suspended') {
+            return back()->withErrors(['error' => 'Akun Anda dibekukan. Transaksi tidak dapat dilakukan.']);
+        }
+
         $account = Account::where('user_id', $user->id)->firstOrFail();
 
         $account->balance += $request->amount;
@@ -63,6 +67,10 @@ class TransactionController extends Controller
         ]);
 
         $user    = Auth::user();
+        if ($user->status === 'suspended') {
+            return back()->withErrors(['error' => 'Akun Anda dibekukan. Transaksi tidak dapat dilakukan.']);
+        }
+
         $account = Account::where('user_id', $user->id)->firstOrFail();
 
         $sisaSaldo = $account->balance - $request->amount;
@@ -100,6 +108,10 @@ class TransactionController extends Controller
         ]);
 
         $user      = Auth::user();
+        if ($user->status === 'suspended') {
+            return back()->withErrors(['error' => 'Akun Anda dibekukan. Transaksi tidak dapat dilakukan.']);
+        }
+        
         $senderAcc = Account::where('user_id', $user->id)->firstOrFail();
 
         $receiverUser = \App\Models\User::where('account_number', $request->receiver_account)->first();
