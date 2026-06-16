@@ -23,6 +23,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     Route::get('/homepage', [AccountsController::class, 'index'])->name('homepage');
+    Route::get('/accounts', [AccountsController::class, 'accounts'])->name('accounts');
     Route::get('/security', [AccountsController::class, 'security'])->name('security');
 
     Route::resource('/pinjaman', PinjamanController::class);
