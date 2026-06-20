@@ -23,9 +23,9 @@ return new class extends Migration
      * Reverse the migrations.
      */
     public function down(): void
-    {
-        Schema::table('security', function (Blueprint $table) {
-            $table->dropColumn(['user_agent', 'device_type', 'old_value', 'new_value', 'status', 'notes']);
-        });
-    }
+{
+    Schema::table('security', function (Blueprint $table) {
+        $table->dropColumn(['old_value', 'new_value', 'status', 'notes']); 
+    });
+}
 };

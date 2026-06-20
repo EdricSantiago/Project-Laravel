@@ -6,6 +6,7 @@ use App\Http\Controllers\AccountsController;
 use App\Http\Controllers\SecurityController;
 use App\Http\Controllers\PinjamanController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SettingsController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -43,12 +44,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/transaction/export-pdf',   [TransactionController::class, 'exportPdf'])->name('transaction.exportPdf');
 
     Route::prefix('security')->group(function () {
-        Route::post('/setup-pin',   [SecurityController::class, 'setupPin'])->name('security.setup');
-        Route::post('/panic',       [SecurityController::class, 'freezeAccount'])->name('security.panic');
-        Route::post('/change-pin',  [SecurityController::class, 'changePin'])->name('security.change');
-        Route::post('/verify-pin',  [SecurityController::class, 'verifyPin'])->name('security.verify');
-        Route::get('/status',       [SecurityController::class, 'getSecurityStatus'])->name('security.status');
-        Route::post('/security/change-password', [SecurityController::class, 'changePassword'])->name('security.password');
-        Route::get('/settings/security-log', [SettingsController::class, 'securityLog'])->name('settings.security-log');
-    });
+    Route::post('/setup-pin',       [SecurityController::class, 'setupPin'])->name('security.setup');
+    Route::post('/panic',           [SecurityController::class, 'freezeAccount'])->name('security.panic');
+    Route::post('/change-pin',      [SecurityController::class, 'changePin'])->name('security.change');
+    Route::post('/verify-pin',      [SecurityController::class, 'verifyPin'])->name('security.verify');
+    Route::get('/status',           [SecurityController::class, 'getSecurityStatus'])->name('security.status');
+    Route::post('/change-password', [SecurityController::class, 'changePassword'])->name('security.password');
+});
+
+Route::get('/settings/security-log', [SettingsController::class, 'securityLog'])->name('settings.security-log');
+
 });
