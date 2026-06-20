@@ -9,6 +9,7 @@ class PinjamanController extends Controller
 {
     public function index(Request $request)
     {
+        abort_if($pinjaman->account->user_id !== Auth::id(), 403);
         $pinjaman = Pinjaman::where('account_id', $request->user()->account->id)
         ->latest()
         ->paginate(10);
@@ -18,11 +19,13 @@ class PinjamanController extends Controller
 
     public function create()
     {
+        abort_if($pinjaman->account->user_id !== Auth::id(), 403);
         return view('pinjaman.create');
     }
 
     public function store(Request $request)
     {
+        abort_if($pinjaman->account->user_id !== Auth::id(), 403);
         $validated = $request->validate([
             'amount' => ['required', 'numeric', 'min:100000'],
             'tenor_months' => ['required', 'integer', 'in:3,6,12,24,36'],
@@ -54,12 +57,14 @@ class PinjamanController extends Controller
 
     public function edit(Pinjaman $pinjaman)
     {
+        abort_if($pinjaman->account->user_id !== Auth::id(), 403);
         abort_if($pinjaman->status !== 'pending', 403, 'Pinjaman tidak bisa diedit.');
         return view('pinjaman.edit', compact('pinjaman'));
     }
 
     public function update(Request $request, Pinjaman $pinjaman)
     {
+        abort_if($pinjaman->account->user_id !== Auth::id(), 403);
         abort_if($pinjaman->status !== 'pending', 403, 'Pinjaman tidak bisa diedit.');
         $validated = $request->validate([
             'amount' => ['required', 'numeric', 'min:100000'],
@@ -84,6 +89,7 @@ class PinjamanController extends Controller
 
     public function destroy(Pinjaman $pinjaman)
     {
+        abort_if($pinjaman->account->user_id !== Auth::id(), 403);
         abort_if($pinjaman->status !== 'pending', 422, 'Hanya pinjaman pending yang bisa dihapus.');
         $pinjaman->delete();
         return redirect()->route('pinjaman.index')->with('success', 'Pinjaman berhasil dihapus.');
