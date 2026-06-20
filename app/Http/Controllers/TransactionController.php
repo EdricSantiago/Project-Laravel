@@ -61,7 +61,14 @@ class TransactionController extends Controller
 
         $user    = Auth::user();
         $account = Account::where('user_id', $user->id)->firstOrFail();
+        $todayTotal = Transaction::where('sender_id', $account->id ?? $senderAcc->id)
+            ->whereIn('type', ['withdraw', 'transfer'])
+            ->whereDate('created_at', now()->toDateString())
+            ->sum('amount');
 
+        if (($todayTotal + $request->amount) > 50000000) {
+            return back()->withErrors(['error' => 'Transaksi gagal! Anda sudah melebihi limit harian Rp 50.000.000.']);
+        }
         $sisaSaldo = $account->balance - $request->amount;
         if ($sisaSaldo < 50000) {
             return back()->withErrors([
@@ -107,7 +114,14 @@ class TransactionController extends Controller
         if ($receiverAcc->id === $senderAcc->id) {
             return back()->withErrors(['receiver_account' => 'Tidak dapat transfer ke rekening sendiri.']);
         }
+        $todayTotal = Transaction::where('sender_id', $account->id ?? $senderAcc->id)
+            ->whereIn('type', ['withdraw', 'transfer'])
+            ->whereDate('created_at', now()->toDateString())
+            ->sum('amount');
 
+        if (($todayTotal + $request->amount) > 50000000) {
+            return back()->withErrors(['error' => 'Transaksi gagal! Anda sudah melebihi limit harian Rp 50.000.000.']);
+        }
         $sisaSaldo = $senderAcc->balance - $request->amount;
         if ($sisaSaldo < 50000) {
             return back()->withErrors([
@@ -137,8 +151,65 @@ class TransactionController extends Controller
         $user    = Auth::user();
         $account = Account::where('user_id', $user->id)->first();
 
-        $transactions = Transaction::where('sender_id', $account?->id)
-            ->orWhere('receiver_id', $account?->id)
+        $transactions = Transaction::where(function($q) use ($account) {
+            $q->where('sender_id', $account?->id)
+            ->orWhere('receiver_id', $account?->id);
+        });
+
+        if ($request->filled('type')) {
+            $transactions->where('type', $request->type);
+        }
+
+        if ($request->filled('start_date') && $request->filled('end_date')) {
+            $transactions->whereBetween('created_at', [$request->start_date, $request->end_date]);
+        }
+
+        $transactions = $transactions->latest()->get();
+
+        return view('transaction', compact('user', 'account', 'transactions'));
+    }
+
+    public function payInsurance(): RedirectResponse
+    {
+        if (!$request->session()->has('pin_verified')) {
+            return back()->withErrors(['error' => 'Anda wajib memverifikasi PIN terlebih dahulu.']);
+        }
+        $request->session()->forget('pin_verified');
+        return DB::transaction(function () {
+            $user    = Auth::user();
+            $account = Account::where('user_id', $user->id)->lockForUpdate()->first();
+            $amount  = $account->asuransi_premium ?? 100000;
+
+            if ($account->balance < $amount) {
+                return redirect()->back()->with('error', 'Saldo tidak mencukupi untuk membayar Asuransi!');
+            }
+
+            $account->decrement('balance', $amount);
+            $account->asuransi_last_paid = now()->toDateString();
+            $account->save();
+
+            Transaction::create([
+                'sender_id'   => $account->id,
+                'receiver_id' => null,
+                'amount'      => $amount,
+                'type'        => 'withdraw',
+                'status'      => 'success',
+            ]);
+
+            return redirect()->back()
+                ->with('success', 'Berhasil membayar Asuransi sebesar Rp ' . number_format($amount, 0, ',', '.'));
+        });
+    }
+
+    public function exportPdf(Request $request): Response
+    {
+        $user    = Auth::user();
+        $account = Account::where('user_id', $user->id)->firstOrFail();
+
+        // Ambil semua transaksi user, load relasi sender/receiver
+        $transactions = Transaction::with(['sender.user', 'receiver.user'])
+            ->where('sender_id', $account->id)
+            ->orWhere('receiver_id', $account->id)
             ->latest()
             ->get();
 
