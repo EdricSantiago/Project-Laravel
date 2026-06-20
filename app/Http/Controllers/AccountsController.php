@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Account;
+use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -16,6 +17,33 @@ class AccountsController extends Controller
         $account = Account::where('user_id', $user->id)->first();
 
         return view('homepage', compact('user', 'account'));
+    }
+
+    public function accounts(): View
+    {
+        $user    = Auth::user();
+        $account = Account::where('user_id', $user->id)->first();
+
+        // Fetch recent transactions where this account is sender or receiver
+        $transactions = collect();
+        if ($account) {
+            $transactions = Transaction::with(['sender.user', 'receiver.user'])
+                ->where('sender_id', $account->id)
+                ->orWhere('receiver_id', $account->id)
+                ->orderByDesc('created_at')
+                ->take(10)
+                ->get();
+        }
+
+        return view('accounts', compact('user', 'account', 'transactions'));
+    }
+
+    public function security(): View
+    {
+        $user    = Auth::user();
+        $account = Account::where('user_id', $user->id)->first();
+
+        return view('security', compact('user', 'account'));
     }
 
     public function show(): View

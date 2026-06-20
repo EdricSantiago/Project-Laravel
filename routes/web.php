@@ -1,8 +1,10 @@
 <?php
+
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\AccountsController;
 use App\Http\Controllers\SecurityController;
+use App\Http\Controllers\PinjamanController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -20,7 +22,11 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    Route::get('/homepage', [AccountsController::class, 'index'])->name('dashboard');
+    Route::get('/homepage', [AccountsController::class, 'index'])->name('homepage');
+    Route::get('/accounts', [AccountsController::class, 'accounts'])->name('accounts');
+    Route::get('/security', [AccountsController::class, 'security'])->name('security');
+
+    Route::resource('/pinjaman', PinjamanController::class);
 
     Route::get('/account',          [AccountsController::class, 'show'])->name('account.show');
     Route::post('/account/topup',   [AccountsController::class, 'topup'])->name('account.topup');

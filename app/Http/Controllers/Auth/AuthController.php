@@ -61,8 +61,8 @@ class AuthController extends Controller
 
         Security::create(['user_id' => $user->id, 'action' => 'LOGIN_SUCCESS', 'ip_address' => $request->ip(), 'user_agent' => $request->userAgent()]);
 
-        $request->session()->regenerate();
-        return redirect()->intended(route('homepage'))->with('success', 'Selamat datang, ' . $user->name . '!');
+        return redirect()->intended(route('homepage'))
+            ->with('success', 'Selamat datang, ' . $user->name . '!');
     }
 
 
@@ -71,24 +71,36 @@ class AuthController extends Controller
         return view('auth.register');
     }
 
-public function register(RegisterRequest $request): RedirectResponse
+   public function register(RegisterRequest $request): RedirectResponse
     {
+        // 1. Ambil nomor rekening acak sekali saja di sini
+        $noRekening = User::generateAccountNumber();
+    
+        // 2. Daftarkan User baru
         $user = User::create([
             'name'           => $request->name,
             'email'          => $request->email,
             'no_hp'          => $request->no_hp,
             'nik'            => $request->nik,
             'password'       => Hash::make($request->password),
+            'account_number' => $noRekening, // Pakai variabel $noRekening
             'pin'            => Hash::make($request->pin),
-            'account_number' => User::generateAccountNumber(),
             'status'         => 'active',
+        ]);
+
+        // 3. Daftarkan Akun Saldo dengan nomor rekening yang SAMA
+        \App\Models\Account::create([
+            'user_id'        => $user->id,
+            'account_number' => $noRekening, // Pakai variabel $noRekening
+            'balance'        => 0, 
+            'status'         => 'active'
         ]);
 
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect()->route('dashboard')
-            ->with('success', 'Registrasi berhasil! Nomor rekening Anda: ' . $user->account_number);
+        return redirect()->route('homepage')
+            ->with('success', 'Registrasi berhasil! Nomor rekening Anda: ' . $noRekening);
     }
 
     public function logout(Request $request): RedirectResponse

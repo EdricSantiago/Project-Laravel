@@ -35,6 +35,7 @@
                                         unique and hard to guess.
                                     </p>
                                 </div>
+
                                 <form class="space-y-4 max-w-md">
                                     <div>
                                         <input type="password" placeholder="Old PIN (6 Digits)"
