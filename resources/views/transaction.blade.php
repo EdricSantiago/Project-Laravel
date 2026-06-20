@@ -133,17 +133,27 @@
         <h3 class="text-lg font-semibold text-gray-800 mb-2">Pembayaran Asuransi</h3>
             <p class="text-sm text-gray-600 mb-4">Tagihan Bulanan: <span class="font-bold text-red-500">Rp 100.000</span></p>
     
-            <form action="{{ route('transaction.payInsurance') }}" method="POST">
-        @csrf
-            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded transition">
-            Bayar Sekarang
-        </button>
-        </form>
+            <form action="{{ route('transaction.payInsurance') }}" method="POST" 
+    onsubmit="this.querySelector('button').disabled=true; this.querySelector('button').innerText='Memproses...';">
+    @csrf
+    <button type="submit" class="...">Bayar Sekarang</button>
+</form>
     </div>
 
     {{-- Riwayat Transaksi --}}
     <div class="bg-white rounded-2xl shadow p-6">
-        <h3 class="font-semibold text-gray-700 mb-4">Riwayat Transaksi</h3>
+    <div class="flex justify-between items-center mb-4">
+        <h3 class="font-semibold text-gray-700">Riwayat Transaksi</h3>
+        <a href="{{ route('transaction.exportPdf') }}"
+        class="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
+                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+            d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h4a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+            </svg>
+            Export PDF
+        </a>
+    </div>
         @forelse($transactions as $trx)
             <div class="flex justify-between items-center border-b py-3 text-sm">
                 <div>
