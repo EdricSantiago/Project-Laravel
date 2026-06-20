@@ -56,7 +56,8 @@
                                     <div>
                                         <h3 class="text-3xl font-bold text-gray-900 mb-4">Update Password</h3>
                                         <p class="text-gray-500 leading-relaxed max-w-md mb-6">
-                                            Ganti password lu secara berkala biar akun tetep aman.
+                                            For enhanced security, it's recommended to change your account password
+                                            periodically. Use a strong combination of letters, numbers, and symbols.
                                         </p>
                                     </div>
 
