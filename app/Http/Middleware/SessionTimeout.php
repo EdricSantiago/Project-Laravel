@@ -10,7 +10,7 @@ class SessionTimeout
 public function handle(Request $request, Closure $next)
 {
 
-    if ($request->routeIs('login', 'register', 'otp.form', 'otp.verify')) {
+    if ($request->routeIs('login', 'register')) {
         return $next($request);
     }
 
