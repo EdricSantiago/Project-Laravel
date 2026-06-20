@@ -16,7 +16,9 @@ class Account extends Model
         'account_number', 
         'balance',
         'status',         
-        'asuransi_premium', // <-- Kodingan asuransimu aman digabung ke sini
+        'asuransi_premium',
+        'asuransi_aktif',
+        'asuransi_last_paid', // <-- Kodingan asuransimu aman digabung ke sini
     ];
 
     protected $casts = [

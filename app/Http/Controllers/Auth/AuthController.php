@@ -60,6 +60,8 @@ class AuthController extends Controller
         $user->save();
 
         Security::create(['user_id' => $user->id, 'action' => 'LOGIN_SUCCESS', 'ip_address' => $request->ip(), 'user_agent' => $request->userAgent()]);
+        $request->session()->regenerate();                        
+        $request->session()->put('last_activity', time());       
 
         return redirect()->intended(route('homepage'))
             ->with('success', 'Selamat datang, ' . $user->name . '!');
