@@ -72,7 +72,14 @@ class TransactionController extends Controller
         }
 
         $account = Account::where('user_id', $user->id)->firstOrFail();
+        $todayTotal = Transaction::where('sender_id', $account->id ?? $senderAcc->id)
+            ->whereIn('type', ['withdraw', 'transfer'])
+            ->whereDate('created_at', now()->toDateString())
+            ->sum('amount');
 
+        if (($todayTotal + $request->amount) > 50000000) {
+            return back()->withErrors(['error' => 'Transaksi gagal! Anda sudah melebihi limit harian Rp 50.000.000.']);
+        }
         $sisaSaldo = $account->balance - $request->amount;
         if ($sisaSaldo < 50000) {
             return back()->withErrors([
@@ -124,7 +131,14 @@ class TransactionController extends Controller
         if ($receiverAcc->id === $senderAcc->id) {
             return back()->withErrors(['receiver_account' => 'Tidak dapat transfer ke rekening sendiri.']);
         }
+        $todayTotal = Transaction::where('sender_id', $account->id ?? $senderAcc->id)
+            ->whereIn('type', ['withdraw', 'transfer'])
+            ->whereDate('created_at', now()->toDateString())
+            ->sum('amount');
 
+        if (($todayTotal + $request->amount) > 50000000) {
+            return back()->withErrors(['error' => 'Transaksi gagal! Anda sudah melebihi limit harian Rp 50.000.000.']);
+        }
         $sisaSaldo = $senderAcc->balance - $request->amount;
         if ($sisaSaldo < 50000) {
             return back()->withErrors([
@@ -174,6 +188,10 @@ class TransactionController extends Controller
 
     public function payInsurance(): RedirectResponse
     {
+        if (!$request->session()->has('pin_verified')) {
+            return back()->withErrors(['error' => 'Anda wajib memverifikasi PIN terlebih dahulu.']);
+        }
+        $request->session()->forget('pin_verified');
         return DB::transaction(function () {
             $user    = Auth::user();
             $account = Account::where('user_id', $user->id)->lockForUpdate()->first();

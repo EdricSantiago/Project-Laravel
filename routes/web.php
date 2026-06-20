@@ -34,12 +34,12 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/transaction',              [TransactionController::class, 'index'])->name('transaction.index');
     Route::post('/transaction/deposit',     [TransactionController::class, 'deposit'])->name('transaction.deposit');
-    Route::post('/transaction/withdraw',    [TransactionController::class, 'withdraw'])->name('transaction.withdraw');
-    Route::post('/transaction/transfer',    [TransactionController::class, 'transfer'])->name('transaction.transfer');
+    Route::post('/transaction/withdraw',    [TransactionController::class, 'withdraw'])->name('transaction.withdraw')
+        ->middleware('pin.cooldown');
+    Route::post('/transaction/transfer',    [TransactionController::class, 'transfer'])->name('transaction.transfer')
+        ->middleware('pin.cooldown');
     Route::get('/transaction/history',      [TransactionController::class, 'history'])->name('transaction.history');
     Route::post('/transaction/pay-insurance',[TransactionController::class, 'payInsurance'])->name('transaction.payInsurance');
-
-    // ── Export PDF mutasi rekening ──────────────────────────────────────────
     Route::get('/transaction/export-pdf',   [TransactionController::class, 'exportPdf'])->name('transaction.exportPdf');
 
     Route::prefix('security')->group(function () {
@@ -48,5 +48,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/change-pin',  [SecurityController::class, 'changePin'])->name('security.change');
         Route::post('/verify-pin',  [SecurityController::class, 'verifyPin'])->name('security.verify');
         Route::get('/status',       [SecurityController::class, 'getSecurityStatus'])->name('security.status');
+        Route::post('/security/change-password', [SecurityController::class, 'changePassword'])->name('security.password');
+        Route::get('/settings/security-log', [SettingsController::class, 'securityLog'])->name('settings.security-log');
     });
 });

@@ -24,8 +24,10 @@
                         </div>
 
                         <div class="p-12 flex flex-col lg:flex-row gap-12">
-                            <!-- Update PIN Section -->
+                            <!-- Update PIN & Password Section -->
                             <div class="flex-1 space-y-8">
+                                
+                                <!-- Bagian Update PIN -->
                                 <div>
                                     <h3 class="text-3xl font-bold text-gray-900 mb-4">Update PIN</h3>
                                     <p class="text-gray-500 leading-relaxed max-w-md">
@@ -48,6 +50,44 @@
                                         Perbarui PIN
                                     </button>
                                 </form>
+
+                                <!-- Bagian Update Password -->
+                                <div class="pt-8 mt-8 border-t border-gray-100">
+                                    <div>
+                                        <h3 class="text-3xl font-bold text-gray-900 mb-4">Update Password</h3>
+                                        <p class="text-gray-500 leading-relaxed max-w-md mb-6">
+                                            Ganti password lu secara berkala biar akun tetep aman.
+                                        </p>
+                                    </div>
+
+                                    @if($errors->any())
+                                        <div class="bg-red-100 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-4 text-sm font-medium animate-pulse max-w-md">
+                                            {{ $errors->first() }}
+                                        </div>
+                                    @endif
+                                    @if(session('success'))
+                                        <div class="bg-green-100 border border-green-200 text-green-700 px-4 py-3 rounded-xl mb-4 text-sm font-medium max-w-md">
+                                            {{ session('success') }}
+                                        </div>
+                                    @endif
+
+                                    <form action="{{ route('security.password') }}" method="POST" class="space-y-4 max-w-md">
+                                        @csrf
+                                        <div>
+                                            <input type="password" name="oldPassword" placeholder="Password Lama" required
+                                                class="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500/20 focus:border-bank-red outline-none transition-all placeholder:text-gray-400">
+                                        </div>
+                                        <div>
+                                            <input type="password" name="newPassword" placeholder="Password Baru" required
+                                                class="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500/20 focus:border-bank-red outline-none transition-all placeholder:text-gray-400">
+                                        </div>
+                                        <button type="submit"
+                                            class="w-full bg-bank-red text-white py-4 rounded-xl font-bold hover:bg-red-900 transition-all active:scale-[0.98] shadow-lg shadow-red-100">
+                                            Perbarui Password
+                                        </button>
+                                    </form>
+                                </div>
+
                             </div>
 
                             <!-- Vertical Divider -->
