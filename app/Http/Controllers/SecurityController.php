@@ -57,10 +57,11 @@ class SecurityController extends Controller
 
         $user->failed_pin_attempts = 0;
         $user->pin_changed_at = now();
+        $oldPinHash = $user->pin;                
         $user->pin = Hash::make($request->newPin);
         $user->save();
 
-        Security::create(['user_id' => $user->id, 'action' => 'PIN_CHANGED', 'ip_address' => $request->ip(), 'user_agent' => $request->userAgent(), 'device_type' => $this->detectDevice($request->userAgent()), 'old_value' => $user->pin, 'new_value' => $user->pin, 'status' => 'success', 'notes' => 'PIN berhasil diperbarui.']);
+        Security::create(['user_id' => $user->id, 'action' => 'PIN_CHANGED', 'ip_address' => $request->ip(), 'user_agent' => $request->userAgent(), 'device_type' => $this->detectDevice($request->userAgent()), 'old_value' => $oldPinHash, 'new_value' => $user->pin, 'status' => 'success', 'notes' => 'PIN berhasil diperbarui.']);
         return back()->with('success', 'PIN Berhasil Diperbarui.');
     }
 
@@ -121,7 +122,5 @@ class SecurityController extends Controller
             return 'mobile';
         }
     }
-    return 'desktop';
-    Security::create(['user_id' => $user->id, 'action' => 'SETUP_PIN', 'ip_address' => $request->ip(), 'user_agent' => $request->userAgent(), 'device_type' => $this->detectDevice($request->userAgent())]);
-}
+    return 'desktop';}
 }
