@@ -12,8 +12,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('security', function (Blueprint $table) {
-            $table->text('user_agent')->nullable();
-            $table->string('device_type')->nullable();
             $table->string('old_value')->nullable();
             $table->string('new_value')->nullable();  
             $table->string('status')->default('success');

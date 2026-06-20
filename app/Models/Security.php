@@ -15,7 +15,7 @@ class Security extends Model
         'user_id',
         'action',
         'ip_address',
-        'user_ip',
+        'user_agent',
         'device_type',
         'old_value',
         'new_value', 
