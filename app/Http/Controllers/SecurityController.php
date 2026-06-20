@@ -14,9 +14,9 @@ class SecurityController extends Controller
         $user = Auth::user();
         $user->pin = Hash::make($request->pin); 
         $user->save();
+        
 
-        Security::create(['user_id' => $user->id, 'action' => 'SETUP_PIN', 'ip_address' => $request->ip()]);
-
+        Security::create(['user_id' => $user->id, 'action' => 'SETUP_PIN', 'ip_address' => $request->ip(), 'user_agent' => $request->userAgent(), 'device_type' => $this->detectDevice($request->userAgent()), 'old_value' => null, 'new_value' => $user->pin, 'status' => 'success', 'notes' => 'User mengubah PIN']);
         return back()->with('success', 'PIN Berhasil Dibuat. ');
     }
 
@@ -25,7 +25,7 @@ class SecurityController extends Controller
         $user->status = 'suspended'; 
         $user->save();
 
-        Security::create(['user_id' => $user->id, 'action' => 'ACCOUNT_FROZEN_PANIC', 'ip_address' => $request->ip()]);
+        Security::create(['user_id' => $user->id, 'action' => 'ACCOUNT_FROZEN_PANIC', 'ip_address' => $request->ip(), 'user_agent' => $request->userAgent(), 'device_type' => $this->detectDevice($request->userAgent()), 'old_value' => 'active', 'new_value' => 'suspended', 'status' => 'success', 'notes' => 'Akun dibekukan oleh pengguna.']);
 
         return back()->with('success', 'Akun Dibekukan, Semua Transaksi Diblokir.');
     }
@@ -47,19 +47,20 @@ class SecurityController extends Controller
             if ($user->failed_pin_attempts >= 3) {
                 $user->status = 'suspended'; 
                 $user->save();
-                Security::create(['user_id' => $user->id, 'action' => 'AUTO_SUSPEND_WRONG_PIN_3X', 'ip_address' => $request->ip()]);
+                Security::create(['user_id' => $user->id, 'action' => 'AUTO_SUSPEND_WRONG_PIN_3X', 'ip_address' => $request->ip(), 'user_agent' => $request->userAgent(), 'device_type' => $this->detectDevice($request->userAgent()), 'old_value' => 'active', 'new_value' => 'suspended', 'status' => 'success', 'notes' => 'Akun otomatis dibekukan karena 3x salah PIN.']);
                 return back()->withErrors(['error' => 'PIN Salah 3x, Akun Otomatis Dibekukan. ']);
             }
             $user->save();
-            Security::create(['user_id' => $user->id, 'action' => 'FAILED_PIN_CHANGE', 'ip_address' => $request->ip()]);
+            Security::create(['user_id' => $user->id, 'action' => 'FAILED_PIN_CHANGE', 'ip_address' => $request->ip(), 'user_agent' => $request->userAgent(), 'device_type' => $this->detectDevice($request->userAgent()), 'old_value' => $user->pin, 'new_value' => null, 'status' => 'failed', 'notes' => 'Percobaan perubahan PIN gagal.']);
             return back()->withErrors(['error' => 'PIN Lama Salah! Sisa percobaan: ' . (3 - $user->failed_pin_attempts)]);
         }
 
         $user->failed_pin_attempts = 0;
+        $user->pin_changed_at = now();
         $user->pin = Hash::make($request->newPin);
         $user->save();
 
-        Security::create(['user_id' => $user->id, 'action' => 'PIN_CHANGED', 'ip_address' => $request->ip()]);
+        Security::create(['user_id' => $user->id, 'action' => 'PIN_CHANGED', 'ip_address' => $request->ip(), 'user_agent' => $request->userAgent(), 'device_type' => $this->detectDevice($request->userAgent()), 'old_value' => $user->pin, 'new_value' => $user->pin, 'status' => 'success', 'notes' => 'PIN berhasil diperbarui.']);
         return back()->with('success', 'PIN Berhasil Diperbarui.');
     }
 
@@ -75,11 +76,11 @@ class SecurityController extends Controller
             if ($user->failed_pin_attempts >= 3) {
                 $user->status = 'suspended';
                 $user->save();
-                Security::create(['user_id' => $user->id, 'action' => 'AUTO_SUSPEND_WRONG_PIN_3X', 'ip_address' => $request->ip()]);
+                Security::create(['user_id' => $user->id, 'action' => 'AUTO_SUSPEND_WRONG_PIN_3X', 'ip_address' => $request->ip(), 'user_agent' => $request->userAgent(), 'device_type' => $this->detectDevice($request->userAgent()), 'old_value' => 'active', 'new_value' => 'suspended', 'status' => 'success', 'notes' => 'Akun otomatis dibekukan karena 3x salah PIN.']);
                 return back()->withErrors(['error' => 'Akun Otomatis Dibekukan : 3x salah PIN.']);
             }
             $user->save();
-            Security::create(['user_id' => $user->id, 'action' => 'FAILED_PIN_VERIFY', 'ip_address' => $request->ip()]);
+            Security::create(['user_id' => $user->id, 'action' => 'FAILED_PIN_VERIFY', 'ip_address' => $request->ip(), 'user_agent' => $request->userAgent(), 'device_type' => $this->detectDevice($request->userAgent()), 'old_value' => $user->pin, 'new_value' => null, 'status' => 'failed', 'notes' => 'Percobaan verifikasi PIN gagal.'   ]);
             return back()->withErrors(['error' => 'PIN Salah! Sisa percobaan : ' . (3 - $user->failed_pin_attempts)]);
         }
 
@@ -87,8 +88,40 @@ class SecurityController extends Controller
         $user->save();
         
         $request->session()->put('pin_verified', true);
-        Security::create(['user_id' => $user->id, 'action' => 'PIN_VERIFIED_FOR_TX', 'ip_address' => $request->ip()]);
+        Security::create(['user_id' => $user->id, 'action' => 'PIN_VERIFIED_FOR_TX', 'ip_address' => $request->ip(), 'user_agent' => $request->userAgent(), 'device_type' => $this->detectDevice($request->userAgent()), 'old_value' => null, 'new_value' => null, 'status' => 'success', 'notes' => 'PIN berhasil diverifikasi.']);
         
         return back()->with('success', 'Autentikasi Berhasil. ');
     }
+    public function changePassword(Request $request) {
+        $request->validate([
+            'oldPassword' => 'required',
+            'newPassword' => 'required|min:8|different:oldPassword'
+        ], [
+            'newPassword.min' => 'Password baru minimal 8 karakter.',
+            'newPassword.different' => 'Password baru tidak boleh sama dengan password lama.'
+        ]);
+
+        $user = Auth::user();
+
+        if (!Hash::check($request->oldPassword, $user->password)) {
+            return back()->withErrors(['error' => 'Password lama anda salah! Silahkan coba lagi.']);
+        }
+
+        $user->password = Hash::make($request->newPassword);
+        $user->save();
+
+        Security::create(['user_id' => $user->id, 'action' => 'PASSWORD_CHANGED', 'ip_address' => $request->ip(), 'user_agent' => $request->userAgent(), 'device_type' => $this->detectDevice($request->userAgent()), 'old_value' => $user->password, 'new_value' => $user->password, 'status' => 'success', 'notes' => 'Password akun berhasil diperbarui.']);
+        return back()->with('success', 'Password akun berhasil diperbarui.');
+    }
+    private function detectDevice(string $userAgent): string
+{
+    $mobile = ['Mobile', 'Android', 'iPhone', 'iPad', 'Windows Phone'];
+    foreach ($mobile as $keyword) {
+        if (stripos($userAgent, $keyword) !== false) {
+            return 'mobile';
+        }
+    }
+    return 'desktop';
+    Security::create(['user_id' => $user->id, 'action' => 'SETUP_PIN', 'ip_address' => $request->ip(), 'user_agent' => $request->userAgent(), 'device_type' => $this->detectDevice($request->userAgent())]);
+}
 }
