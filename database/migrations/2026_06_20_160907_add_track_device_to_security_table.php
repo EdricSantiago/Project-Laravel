@@ -10,19 +10,17 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
+    {
+    Schema::table('security', function (Blueprint $table) {
+        $table->text('user_agent')->nullable()->after('ip_address');
+        $table->string('device_type')->nullable()->after('user_agent');
+    });
+    }
+
+public function down(): void
 {
     Schema::table('security', function (Blueprint $table) {
-        $table->text('user_ip')->nullable()->after('ip_address');
-        $table->string('device_type')->nullable()->after('device'); 
+        $table->dropColumn(['user_agent', 'device_type']);
     });
 }
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::table('security', function (Blueprint $table) {
-            $table->dropColumn(['user_ip', 'device_type']);
-        });
-    }
 };
