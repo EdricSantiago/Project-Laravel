@@ -5,6 +5,8 @@ use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\AccountsController;
 use App\Http\Controllers\SecurityController;
 use App\Http\Controllers\PinjamanController;
+use App\Http\Controllers\SahamController;
+use App\Http\Controllers\InvestasiController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -26,6 +28,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/security', [AccountsController::class, 'security'])->name('security');
 
     Route::resource('/pinjaman', PinjamanController::class);
+    Route::resource('saham', SahamController::class);
+
+    Route::post('saham/{saham}/invest', [InvestasiController::class, 'store'])->name('investasi.store');
+    Route::get('investasi', [InvestasiController::class, 'index'])->name('investasi.index');
+    Route::get('investasi/{investasi}', [InvestasiController::class, 'show'])->name('investasi.show');
 
     Route::get('/account',          [AccountsController::class, 'show'])->name('account.show');
     Route::post('/account/topup',   [AccountsController::class, 'topup'])->name('account.topup');
