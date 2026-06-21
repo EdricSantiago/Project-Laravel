@@ -48,10 +48,6 @@
 
     <!-- Bottom Section -->
     <div class="px-4 pb-4 mt-auto space-y-4">
-        <a href="{{ route('transaction.index') }}"
-            class="flex items-center justify-center gap-2 bg-bank-red text-white py-3 rounded-xl font-bold text-sm hover:bg-red-900 transition-all active:scale-[0.98] shadow-lg shadow-red-200/40">
-            <i class="material-icons text-lg">bolt</i> Quick Transfer
-        </a>
         <div class="flex items-center justify-center gap-5 pt-2 pb-1">
             <a href="#"
                 class="flex flex-col items-center gap-1 text-gray-400 hover:text-gray-600 transition-colors">
