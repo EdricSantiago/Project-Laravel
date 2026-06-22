@@ -5,6 +5,9 @@ use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\AccountsController;
 use App\Http\Controllers\SecurityController;
 use App\Http\Controllers\PinjamanController;
+use App\Http\Controllers\SahamController;
+use App\Http\Controllers\InvestasiController;
+use App\Http\Controllers\EcommerceProductController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SettingsController;
 
@@ -28,6 +31,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/security', [AccountsController::class, 'security'])->name('security');
 
     Route::resource('/pinjaman', PinjamanController::class);
+    Route::resource('saham', SahamController::class);
+
+    Route::post('saham/{saham}/invest', [InvestasiController::class, 'store'])->name('investasi.store');
+    Route::get('investasi', [InvestasiController::class, 'index'])->name('investasi.index');
+    Route::get('investasi/{investasi}', [InvestasiController::class, 'show'])->name('investasi.show');
 
     Route::get('/account',          [AccountsController::class, 'show'])->name('account.show');
     Route::post('/account/topup',   [AccountsController::class, 'topup'])->name('account.topup');
@@ -50,8 +58,16 @@ Route::middleware('auth')->group(function () {
     Route::post('/verify-pin',      [SecurityController::class, 'verifyPin'])->name('security.verify');
     Route::get('/status',           [SecurityController::class, 'getSecurityStatus'])->name('security.status');
     Route::post('/change-password', [SecurityController::class, 'changePassword'])->name('security.password');
-});
+    });
 
-Route::get('/settings/security-log', [SettingsController::class, 'securityLog'])->name('settings.security-log');
+    Route::get('/settings/security-log', [SettingsController::class, 'securityLog'])->name('settings.security-log');
+
+    Route::prefix('ecommerce')->name('ecommerce.')->group(function () {
+    Route::get('/', [EcommerceProductController::class, 'index'])->name('index');
+    Route::get('/buy/{product}', [EcommerceProductController::class, 'buy'])->name('buy');
+    Route::post('/buy/{product}', [EcommerceProductController::class, 'process'])->name('process');
+    Route::get('/success/{order}', [EcommerceProductController::class, 'success'])->name('success');
+    Route::get('/history', [EcommerceProductController::class, 'history'])->name('history');
+    });
 
 });

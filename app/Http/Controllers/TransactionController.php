@@ -78,7 +78,7 @@ class TransactionController extends Controller
             ->sum('amount');
 
         if (($todayTotal + $request->amount) > 50000000) {
-            return back()->withErrors(['error' => 'Transaksi gagal! Anda sudah melebihi limit harian Rp 50.000.000.']);
+            return back()->withErrors(['error' => 'Transaksi gagal! Anda melebihi limit Rp 50.000.000 untuk transaksi hari ini.']);
         }
         $sisaSaldo = $account->balance - $request->amount;
         if ($sisaSaldo < 50000) {
@@ -137,7 +137,7 @@ class TransactionController extends Controller
             ->sum('amount');
 
         if (($todayTotal + $request->amount) > 50000000) {
-            return back()->withErrors(['error' => 'Transaksi gagal! Anda sudah melebihi limit harian Rp 50.000.000.']);
+            return back()->withErrors(['error' => 'Transaksi gagal! Anda melebihi limit Rp 50.000.000 untuk transaksi hari ini.']);
         }
         $sisaSaldo = $senderAcc->balance - $request->amount;
         if ($sisaSaldo < 50000) {
