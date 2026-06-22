@@ -7,6 +7,7 @@ use App\Http\Controllers\SecurityController;
 use App\Http\Controllers\PinjamanController;
 use App\Http\Controllers\SahamController;
 use App\Http\Controllers\InvestasiController;
+use App\Http\Controllers\EcommerceProductController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SettingsController;
 
@@ -57,8 +58,16 @@ Route::middleware('auth')->group(function () {
     Route::post('/verify-pin',      [SecurityController::class, 'verifyPin'])->name('security.verify');
     Route::get('/status',           [SecurityController::class, 'getSecurityStatus'])->name('security.status');
     Route::post('/change-password', [SecurityController::class, 'changePassword'])->name('security.password');
-});
+    });
 
-Route::get('/settings/security-log', [SettingsController::class, 'securityLog'])->name('settings.security-log');
+    Route::get('/settings/security-log', [SettingsController::class, 'securityLog'])->name('settings.security-log');
+
+    Route::prefix('ecommerce')->name('ecommerce.')->group(function () {
+    Route::get('/', [EcommerceProductController::class, 'index'])->name('index');
+    Route::get('/buy/{product}', [EcommerceProductController::class, 'buy'])->name('buy');
+    Route::post('/buy/{product}', [EcommerceProductController::class, 'process'])->name('process');
+    Route::get('/success/{order}', [EcommerceProductController::class, 'success'])->name('success');
+    Route::get('/history', [EcommerceProductController::class, 'history'])->name('history');
+    });
 
 });
