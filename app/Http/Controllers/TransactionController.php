@@ -39,6 +39,9 @@ class TransactionController extends Controller
         }
 
         $account = Account::where('user_id', $user->id)->firstOrFail();
+        if ($account->status === 'suspended') {
+        return back()->withErrors(['error' => 'Rekening Anda dibekukan. Transaksi tidak dapat dilakukan.']);
+}
 
         $account->balance += $request->amount;
         $account->save();
@@ -72,6 +75,9 @@ class TransactionController extends Controller
         }
 
         $account = Account::where('user_id', $user->id)->firstOrFail();
+        if ($account->status === 'suspended') {
+        return back()->withErrors(['error' => 'Rekening Anda dibekukan. Transaksi tidak dapat dilakukan.']);
+}
         $todayTotal = Transaction::where('sender_id', $account->id)            
             ->whereIn('type', ['withdraw', 'transfer'])
             ->whereDate('created_at', now()->toDateString())
@@ -103,47 +109,51 @@ class TransactionController extends Controller
     }
 
     public function transfer(Request $request): RedirectResponse
-    {
-        if (!$request->session()->has('pin_verified')) {
-            return back()->withErrors(['error' => 'Anda wajib memverifikasi PIN terlebih dahulu.']);
-        }
-        $request->session()->forget('pin_verified');
+{
+    if (!$request->session()->has('pin_verified')) {
+        return back()->withErrors(['error' => 'Anda wajib memverifikasi PIN terlebih dahulu.']);
+    }
+    $request->session()->forget('pin_verified');
 
-        $request->validate([
-            'amount'           => ['required', 'numeric', 'min:10000'],
-            'receiver_account' => ['required', 'string'],
-        ]);
+    $request->validate([
+        'amount'           => ['required', 'numeric', 'min:10000'],
+        'receiver_account' => ['required', 'string'],
+    ]);
 
-        $user = Auth::user();
-        if ($user->status === 'suspended') {
-            return back()->withErrors(['error' => 'Akun Anda dibekukan. Transaksi tidak dapat dilakukan.']);
+    $user = Auth::user();
+    if ($user->status === 'suspended') {
+        return back()->withErrors(['error' => 'Akun Anda dibekukan.']);
+    }
+
+    return DB::transaction(function () use ($request, $user) {
+        $senderAcc = Account::where('user_id', $user->id)->lockForUpdate()->firstOrFail();
+
+        if ($senderAcc->status === 'suspended') {
+            return back()->withErrors(['error' => 'Rekening Anda dibekukan.']);
         }
-        
-        $senderAcc = Account::where('user_id', $user->id)->firstOrFail();
 
         $receiverUser = \App\Models\User::where('account_number', $request->receiver_account)->first();
         if (!$receiverUser) {
             return back()->withErrors(['receiver_account' => 'Nomor rekening tujuan tidak ditemukan.']);
         }
 
-        $receiverAcc = Account::where('user_id', $receiverUser->id)->first();
+        $receiverAcc = Account::where('user_id', $receiverUser->id)->lockForUpdate()->first();
 
         if ($receiverAcc->id === $senderAcc->id) {
             return back()->withErrors(['receiver_account' => 'Tidak dapat transfer ke rekening sendiri.']);
         }
-            $todayTotal = Transaction::where('sender_id', $senderAcc->id)            
+
+        $todayTotal = Transaction::where('sender_id', $senderAcc->id)
             ->whereIn('type', ['withdraw', 'transfer'])
             ->whereDate('created_at', now()->toDateString())
             ->sum('amount');
 
         if (($todayTotal + $request->amount) > 50000000) {
-            return back()->withErrors(['error' => 'Transaksi gagal! Anda melebihi limit Rp 50.000.000 untuk transaksi hari ini.']);
+            return back()->withErrors(['error' => 'Melebihi limit harian Rp 50.000.000.']);
         }
-        $sisaSaldo = $senderAcc->balance - $request->amount;
-        if ($sisaSaldo < 50000) {
-            return back()->withErrors([
-                'amount' => 'Saldo tidak mencukupi. Minimal sisa saldo setelah transfer adalah Rp 50.000.'
-            ]);
+
+        if (($senderAcc->balance - $request->amount) < 50000) {
+            return back()->withErrors(['amount' => 'Saldo tidak mencukupi. Minimal sisa saldo Rp 50.000.']);
         }
 
         $senderAcc->balance   -= $request->amount;
@@ -161,7 +171,8 @@ class TransactionController extends Controller
 
         return redirect()->route('transaction.index')
             ->with('success', 'Transfer berhasil! Rp ' . number_format($request->amount, 0, ',', '.') . ' dikirim.');
-    }
+    });
+}
 
     public function history(Request $request)
     {
@@ -195,6 +206,9 @@ class TransactionController extends Controller
         return DB::transaction(function () {
             $user    = Auth::user();
             $account = Account::where('user_id', $user->id)->lockForUpdate()->first();
+            if ($account->status === 'suspended') {
+        return back()->withErrors(['error' => 'Rekening Anda dibekukan. Transaksi tidak dapat dilakukan.']);
+        }
             $amount  = $account->asuransi_premium ?? 100000;
 
             if ($account->balance < $amount) {
@@ -218,17 +232,12 @@ class TransactionController extends Controller
         });
     }
 
-    // ─── EXPORT PDF ─────────────────────────────────────────────────────────────
-    /**
-     * Export riwayat transaksi user ke PDF.
-     * Route: GET /transaction/export-pdf
-     */
+
     public function exportPdf(Request $request): Response
     {
         $user    = Auth::user();
         $account = Account::where('user_id', $user->id)->firstOrFail();
 
-        // Ambil semua transaksi user, load relasi sender/receiver
         $transactions = Transaction::with(['sender.user', 'receiver.user'])
             ->where('sender_id', $account->id)
             ->orWhere('receiver_id', $account->id)

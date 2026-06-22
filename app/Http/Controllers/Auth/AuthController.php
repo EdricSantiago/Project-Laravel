@@ -38,12 +38,27 @@ class AuthController extends Controller
                     $user->locked_until = now()->addMinutes(30);
                     $user->failed_login_attempts = 0;
                     $user->save();
-                    Security::create(['user_id' => $user->id, 'action' => 'AUTO_LOCKED_WRONG_PASSWORD_5X', 'ip_address' => $request->ip(), 'user_agent' => $request->userAgent()]);
+                    $isMobile = collect(['Mobile', 'Android', 'iPhone', 'iPad', 'Windows Phone'])
+                    ->contains(fn($k) => stripos($request->userAgent(), $k) !== false);
+
+                    Security::create([
+                        'user_id'     => $user->id,
+                        'action'      => 'LOGIN_SUCCESS',
+                        'ip_address'  => $request->ip(),
+                        'user_agent'  => $request->userAgent(),
+                        'device_type' => $isMobile ? 'mobile' : 'desktop',
+                    ]);
                     return back()->withErrors(['email' => 'Terlalu banyak percobaan. Akun terkunci 30 menit.']);
                 }
 
                 $user->save();
-                Security::create(['user_id' => $user->id, 'action' => 'FAILED_LOGIN', 'ip_address' => $request->ip(), 'user_agent' => $request->userAgent()]);
+                Security::create([
+                    'user_id'     => $user->id,
+                    'action'      => 'LOGIN_SUCCESS',
+                    'ip_address'  => $request->ip(),
+                    'user_agent'  => $request->userAgent(),
+                    'device_type' => $isMobile ? 'mobile' : 'desktop',
+                    ]);
                 return back()->withInput($request->only('email'))->withErrors(['email' => 'Email atau password salah. Sisa percobaan: ' . (5 - $user->failed_login_attempts)]);
             }
             return back()->withInput($request->only('email'))->withErrors(['email' => 'Email atau password salah.']);
@@ -60,7 +75,13 @@ class AuthController extends Controller
         $user->locked_until = null;
         $user->save();
 
-        Security::create(['user_id' => $user->id, 'action' => 'LOGIN_SUCCESS', 'ip_address' => $request->ip(), 'user_agent' => $request->userAgent()]);
+        Security::create([
+            'user_id'     => $user->id,
+            'action'      => 'LOGIN_SUCCESS',
+            'ip_address'  => $request->ip(),
+            'user_agent'  => $request->userAgent(),
+            'device_type' => $isMobile ? 'mobile' : 'desktop',
+        ]);
         $request->session()->regenerate();                        
         $request->session()->put('last_activity', time());       
 
@@ -74,7 +95,7 @@ class AuthController extends Controller
         return view('auth.register');
     }
 
-   public function register(RegisterRequest $request): RedirectResponse
+    public function register(RegisterRequest $request): RedirectResponse
     {
         // 1. Ambil nomor rekening acak sekali saja di sini
         $noRekening = User::generateAccountNumber();
