@@ -13,6 +13,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->redirectUsersTo('/homepage');
         $middleware->redirectGuestsTo('/login');
+        $middleware->appendToGroup('web', \App\Http\Middleware\SessionTimeout::class);       
+        $middleware->alias(['pin.cooldown' => \App\Http\Middleware\PinCooldown::class,
+    ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
