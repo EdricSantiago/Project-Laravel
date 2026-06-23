@@ -10,49 +10,49 @@ use App\Models\Account;
 class SecurityController extends Controller
 {
     public function setupPin(Request $request) {
-    $request->validate(['pin' => 'required|numeric|digits:6'], ['pin.digits' => 'PIN Harus 6-digit Angka.']);
+        $request->validate(['pin' => 'required|numeric|digits:6'], ['pin.digits' => 'PIN Harus 6-digit Angka.']);
 
-    $user = Auth::user();
+        $user = Auth::user();
 
-    if ($user->pin) return back()->withErrors(['error' => 'PIN sudah disetup sebelumnya. Gunakan fitur Ganti PIN.']);
+        if ($user->pin) return back()->withErrors(['pin' => 'PIN sudah disetup sebelumnya. Gunakan fitur Ganti PIN.'], 'pinBag');
 
-    $user->pin = Hash::make($request->pin);
-    $user->save();
+        $user->pin = Hash::make($request->pin);
+        $user->save();
 
-    Security::create([
-        'user_id'     => $user->id,
-        'action'      => 'SETUP_PIN',
-        'ip_address'  => $request->ip(),
-        'user_agent'  => $request->userAgent(),
-        'device_type' => $this->detectDevice($request->userAgent()),
-        'old_value'   => null,
-        'new_value'   => $user->pin,
-        'status'      => 'success',
-        'notes'       => 'User membuat PIN pertama kali.', 
-    ]);
-    return back()->with('success', 'PIN Berhasil Dibuat.');
-}
+        Security::create([
+            'user_id'     => $user->id,
+            'action'      => 'SETUP_PIN',
+            'ip_address'  => $request->ip(),
+            'user_agent'  => $request->userAgent(),
+            'device_type' => $this->detectDevice($request->userAgent()),
+            'old_value'   => null,
+            'new_value'   => $user->pin,
+            'status'      => 'success',
+            'notes'       => 'User membuat PIN pertama kali.',
+        ]);
+        return back()->with('pin_success', 'PIN Berhasil Dibuat.');
+    }
 
     public function freezeAccount(Request $request) {
         $user = Auth::user();
-        $user->status = 'suspended'; 
+        $user->status = 'suspended';
         $user->save();
 
         Account::where('user_id', $user->id)->update(['status' => 'suspended']);
 
         Security::create([
-            'user_id' => $user->id, 
-            'action' => 'ACCOUNT_FROZEN_PANIC', 
-            'ip_address' => $request->ip(), 
-            'user_agent' => $request->userAgent(), 
-            'device_type' => $this->detectDevice($request->userAgent()), 
-            'old_value' => 'active', 
-            'new_value' => 'suspended', 
-            'status' => 'success', 
-            'notes' => 'Akun dibekukan oleh pengguna.']
-        );
+            'user_id'     => $user->id,
+            'action'      => 'ACCOUNT_FROZEN_PANIC',
+            'ip_address'  => $request->ip(),
+            'user_agent'  => $request->userAgent(),
+            'device_type' => $this->detectDevice($request->userAgent()),
+            'old_value'   => 'active',
+            'new_value'   => 'suspended',
+            'status'      => 'success',
+            'notes'       => 'Akun dibekukan oleh pengguna melalui panic button.',
+        ]);
 
-        return back()->with('success', 'Akun Dibekukan, Semua Transaksi Diblokir.');
+        return back()->with('freeze_success', 'Akun Dibekukan, Semua Transaksi Diblokir.');
     }
 
     public function changePin(Request $request) {
@@ -63,160 +63,162 @@ class SecurityController extends Controller
 
         $user = Auth::user();
 
-        if ($user->status === 'suspended') return back()->withErrors(['error' => 'Akun sedang dibekukan.']);
-        if (!$user->pin) return back()->withErrors(['error' => 'PIN Belum Setup.']);
+        if ($user->status === 'suspended') return back()->withErrors(['oldPin' => 'Akun sedang dibekukan.'], 'pinBag');
+        if (!$user->pin) return back()->withErrors(['oldPin' => 'PIN Belum Setup.'], 'pinBag');
 
         if (!Hash::check($request->oldPin, $user->pin)) {
-            $user->failed_pin_attempts += 1; 
-            
+            $user->failed_pin_attempts += 1;
+
             if ($user->failed_pin_attempts >= 3) {
-                $user->status = 'suspended'; 
-                $user->failed_pin_attempts = 0; 
+                $user->status = 'suspended';
+                $user->failed_pin_attempts = 0;
                 $user->save();
                 Account::where('user_id', $user->id)->update(['status' => 'suspended']);
                 Security::create([
-                    'user_id' => $user->id, 
-                    'action' => 'AUTO_SUSPEND_WRONG_PIN_3X', 
-                    'ip_address' => $request->ip(), 
-                    'user_agent' => $request->userAgent(), 
-                    'device_type' => $this->detectDevice($request->userAgent()), 
-                    'old_value' => 'active', 
-                    'new_value' => 'suspended', 
-                    'status' => 'success', 
-                    'notes' => 'Akun otomatis dibekukan karena 3x salah PIN.'
+                    'user_id'     => $user->id,
+                    'action'      => 'AUTO_SUSPEND_WRONG_PIN_3X',
+                    'ip_address'  => $request->ip(),
+                    'user_agent'  => $request->userAgent(),
+                    'device_type' => $this->detectDevice($request->userAgent()),
+                    'old_value'   => 'active',
+                    'new_value'   => 'suspended',
+                    'status'      => 'success',
+                    'notes'       => 'Akun otomatis dibekukan karena 3x salah PIN.',
                 ]);
-                return back()->withErrors(['error' => 'PIN Salah 3x, Akun Otomatis Dibekukan. ']);
+                return back()->withErrors(['oldPin' => 'PIN Salah 3x, Akun Otomatis Dibekukan.'], 'pinBag');
             }
+
             $user->save();
             Security::create([
-                'user_id' => $user->id, 
-                'action' => 'FAILED_PIN_CHANGE', 
-                'ip_address' => $request->ip(), 
-                'user_agent' => $request->userAgent(), 
-                'device_type' => $this->detectDevice($request->userAgent()), 
-                'old_value' => $user->pin, 
-                'new_value' => null, 
-                'status' => 'failed', 
-                'notes' => 'Percobaan perubahan PIN gagal.'
+                'user_id'     => $user->id,
+                'action'      => 'FAILED_PIN_CHANGE',
+                'ip_address'  => $request->ip(),
+                'user_agent'  => $request->userAgent(),
+                'device_type' => $this->detectDevice($request->userAgent()),
+                'old_value'   => $user->pin,
+                'new_value'   => null,
+                'status'      => 'failed',
+                'notes'       => 'Percobaan perubahan PIN gagal.',
             ]);
-            return back()->withErrors(['error' => 'PIN Lama Salah! Sisa percobaan: ' . (3 - $user->failed_pin_attempts)]);
+            return back()->withErrors(['oldPin' => 'PIN Lama Salah! Sisa percobaan: ' . (3 - $user->failed_pin_attempts)], 'pinBag');
         }
 
+        $oldPinHash = $user->pin;
         $user->failed_pin_attempts = 0;
         $user->pin_changed_at = now();
-        $oldPinHash = $user->pin;                
         $user->pin = Hash::make($request->newPin);
         $user->save();
 
         Security::create([
-            'user_id' => $user->id, 
-            'action' => 'PIN_CHANGED', 
-            'ip_address' => $request->ip(), 
-            'user_agent' => $request->userAgent(), 
-            'device_type' => $this->detectDevice($request->userAgent()), 
-            'old_value' => $oldPinHash, 
-            'new_value' => $user->pin, 
-            'status' => 'success', 
-            'notes' => 'PIN berhasil diperbarui.'
+            'user_id'     => $user->id,
+            'action'      => 'PIN_CHANGED',
+            'ip_address'  => $request->ip(),
+            'user_agent'  => $request->userAgent(),
+            'device_type' => $this->detectDevice($request->userAgent()),
+            'old_value'   => $oldPinHash,
+            'new_value'   => $user->pin,
+            'status'      => 'success',
+            'notes'       => 'PIN berhasil diperbarui.',
         ]);
-        return back()->with('success', 'PIN Berhasil Diperbarui.');
+        return back()->with('pin_success', 'PIN Berhasil Diperbarui.');
     }
 
     public function verifyPin(Request $request) {
-    $request->validate(['pin' => 'required']);
-    $user = Auth::user();
+        $request->validate(['pin' => 'required']);
+        $user = Auth::user();
 
-    if ($user->status === 'suspended') return back()->withErrors(['error' => 'Akun sedang dibekukan.']);
+        if ($user->status === 'suspended') return back()->withErrors(['error' => 'Akun sedang dibekukan.']);
+        if (!$user->pin) return back()->withErrors(['error' => 'PIN belum disetup. Silakan setup PIN terlebih dahulu.']);
 
-    if (!$user->pin) return back()->withErrors(['error' => 'PIN belum disetup. Silakan setup PIN terlebih dahulu.']);
+        if (!Hash::check($request->pin, $user->pin)) {
+            $user->failed_pin_attempts += 1;
 
-    if (!Hash::check($request->pin, $user->pin)) {
-        $user->failed_pin_attempts += 1;
+            if ($user->failed_pin_attempts >= 3) {
+                $user->status = 'suspended';
+                $user->failed_pin_attempts = 0;
+                $user->save();
+                Account::where('user_id', $user->id)->update(['status' => 'suspended']);
+                Security::create([
+                    'user_id'     => $user->id,
+                    'action'      => 'AUTO_SUSPEND_WRONG_PIN_3X',
+                    'ip_address'  => $request->ip(),
+                    'user_agent'  => $request->userAgent(),
+                    'device_type' => $this->detectDevice($request->userAgent()),
+                    'old_value'   => 'active',
+                    'new_value'   => 'suspended',
+                    'status'      => 'success',
+                    'notes'       => 'Akun otomatis dibekukan karena 3x salah PIN.',
+                ]);
+                return back()->withErrors(['error' => 'Akun Otomatis Dibekukan : 3x salah PIN.']);
+            }
 
-        if ($user->failed_pin_attempts >= 3) {
-            $user->status = 'suspended';
-            $user->failed_pin_attempts = 0; 
             $user->save();
-            Account::where('user_id', $user->id)->update(['status' => 'suspended']);
             Security::create([
                 'user_id'     => $user->id,
-                'action'      => 'AUTO_SUSPEND_WRONG_PIN_3X',
+                'action'      => 'FAILED_PIN_VERIFY',
                 'ip_address'  => $request->ip(),
                 'user_agent'  => $request->userAgent(),
                 'device_type' => $this->detectDevice($request->userAgent()),
-                'old_value'   => 'active',
-                'new_value'   => 'suspended',
-                'status'      => 'success',
-                'notes'       => 'Akun otomatis dibekukan karena 3x salah PIN.',
+                'old_value'   => null,
+                'new_value'   => null,
+                'status'      => 'failed',
+                'notes'       => 'Percobaan verifikasi PIN gagal.',
             ]);
-            return back()->withErrors(['error' => 'Akun Otomatis Dibekukan : 3x salah PIN.']);
+            return back()->withErrors(['error' => 'PIN Salah! Sisa percobaan : ' . (3 - $user->failed_pin_attempts)]);
         }
 
+        $user->failed_pin_attempts = 0;
         $user->save();
+
+        $request->session()->put('pin_verified', true);
         Security::create([
             'user_id'     => $user->id,
-            'action'      => 'FAILED_PIN_VERIFY',
+            'action'      => 'PIN_VERIFIED_FOR_TX',
             'ip_address'  => $request->ip(),
             'user_agent'  => $request->userAgent(),
             'device_type' => $this->detectDevice($request->userAgent()),
             'old_value'   => null,
             'new_value'   => null,
-            'status'      => 'failed',
-            'notes'       => 'Percobaan verifikasi PIN gagal.',
+            'status'      => 'success',
+            'notes'       => 'PIN berhasil diverifikasi untuk transaksi.',
         ]);
-        return back()->withErrors(['error' => 'PIN Salah! Sisa percobaan : ' . (3 - $user->failed_pin_attempts)]);
+
+        return back()->with('success', 'Autentikasi Berhasil.');
     }
 
-    $user->failed_pin_attempts = 0;
-    $user->save();
-
-    $request->session()->put('pin_verified', true);
-    Security::create([
-        'user_id'     => $user->id,
-        'action'      => 'PIN_VERIFIED_FOR_TX',
-        'ip_address'  => $request->ip(),
-        'user_agent'  => $request->userAgent(),
-        'device_type' => $this->detectDevice($request->userAgent()),
-        'old_value'   => null,
-        'new_value'   => null,
-        'status'      => 'success',
-        'notes'       => 'PIN berhasil diverifikasi.',
-    ]);
-
-    return back()->with('success', 'Autentikasi Berhasil.');
-}
     public function changePassword(Request $request) {
-    $request->validate([
-        'oldPassword' => 'required',
-        'newPassword' => 'required|min:8|different:oldPassword'
-    ], [
-        'newPassword.min'       => 'Password baru minimal 8 karakter.',
-        'newPassword.different' => 'Password baru tidak boleh sama dengan password lama.'
-    ]);
+        $request->validate([
+            'oldPassword' => 'required',
+            'newPassword' => 'required|min:8|different:oldPassword'
+        ], [
+            'newPassword.min'       => 'Password baru minimal 8 karakter.',
+            'newPassword.different' => 'Password baru tidak boleh sama dengan password lama.'
+        ]);
 
-    $user = Auth::user();
+        $user = Auth::user();
 
-    if (!Hash::check($request->oldPassword, $user->password)) {
-        return back()->withErrors(['error' => 'Password lama anda salah! Silahkan coba lagi.']);
+        if (!Hash::check($request->oldPassword, $user->password)) {
+            return back()->withErrors(['oldPassword' => 'Password lama anda salah! Silahkan coba lagi.'], 'passwordBag');
+        }
+
+        $oldPasswordHash = $user->password;
+        $user->password = Hash::make($request->newPassword);
+        $user->save();
+
+        Security::create([
+            'user_id'     => $user->id,
+            'action'      => 'PASSWORD_CHANGED',
+            'ip_address'  => $request->ip(),
+            'user_agent'  => $request->userAgent(),
+            'device_type' => $this->detectDevice($request->userAgent()),
+            'old_value'   => $oldPasswordHash,
+            'new_value'   => $user->password,
+            'status'      => 'success',
+            'notes'       => 'Password akun berhasil diperbarui.',
+        ]);
+        return back()->with('password_success', 'Password akun berhasil diperbarui.');
     }
 
-    $oldPasswordHash = $user->password; 
-    $user->password = Hash::make($request->newPassword);
-    $user->save();
-
-    Security::create([
-        'user_id'     => $user->id,
-        'action'      => 'PASSWORD_CHANGED',
-        'ip_address'  => $request->ip(),
-        'user_agent'  => $request->userAgent(),
-        'device_type' => $this->detectDevice($request->userAgent()),
-        'old_value'   => $oldPasswordHash, 
-        'new_value'   => $user->password, 
-        'status'      => 'success',
-        'notes'       => 'Password akun berhasil diperbarui.',
-    ]);
-    return back()->with('success', 'Password akun berhasil diperbarui.');
-}
     public function getSecurityStatus(Request $request) {
         $user = Auth::user();
 
@@ -225,11 +227,11 @@ class SecurityController extends Controller
             ->count();
 
         return response()->json([
-            'is_suspended'      => $user->status === 'suspended',
-            'has_pin'           => !is_null($user->pin),
+            'is_suspended'        => $user->status === 'suspended',
+            'has_pin'             => !is_null($user->pin),
             'failed_pin_attempts' => $user->failed_pin_attempts ?? 0,
-            'failed_pin_logs'   => $failedPinLogs,
-            'pin_changed_at'    => $user->pin_changed_at,
+            'failed_pin_logs'     => $failedPinLogs,
+            'pin_changed_at'      => $user->pin_changed_at,
             'pin_cooldown_active' => $user->pin_changed_at
                 ? now()->diffInHours($user->pin_changed_at) < 24
                 : false,
@@ -237,12 +239,13 @@ class SecurityController extends Controller
     }
 
     private function detectDevice(string $userAgent): string
-{
-    $mobile = ['Mobile', 'Android', 'iPhone', 'iPad', 'Windows Phone'];
-    foreach ($mobile as $keyword) {
-        if (stripos($userAgent, $keyword) !== false) {
-            return 'mobile';
+    {
+        $mobile = ['Mobile', 'Android', 'iPhone', 'iPad', 'Windows Phone'];
+        foreach ($mobile as $keyword) {
+            if (stripos($userAgent, $keyword) !== false) {
+                return 'mobile';
+            }
         }
+        return 'desktop';
     }
-    return 'desktop';}
 }

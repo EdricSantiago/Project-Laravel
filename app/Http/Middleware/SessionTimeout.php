@@ -15,7 +15,7 @@ public function handle(Request $request, Closure $next)
     }
 
     if (Auth::check()) {
-        $timeout = 5 * 60; 
+        $timeout = 15 * 60; // 15 minutes in seconds
 
         if ($request->session()->has('last_activity')) {
             $lastActivity = $request->session()->get('last_activity');
