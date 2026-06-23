@@ -42,8 +42,9 @@ class AccountsController extends Controller
     {
         $user    = Auth::user();
         $account = Account::where('user_id', $user->id)->first();
+        $logs = \App\Models\Security::where('user_id', Auth::id())->latest()->paginate(10);
 
-        return view('security', compact('user', 'account'));
+        return view('security', compact('user', 'account', 'logs'));
     }
 
     public function show(): View
@@ -87,4 +88,5 @@ class AccountsController extends Controller
 
         return back()->with('success', 'Penarikan berhasil! Saldo berkurang Rp ' . number_format($request->amount, 0, ',', '.'));
     }
+
 }
