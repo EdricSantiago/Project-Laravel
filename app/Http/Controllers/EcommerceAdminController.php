@@ -3,15 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\EcommerceOrder;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class EcommerceAdminController extends Controller
 {
     public function index()
     {
-        abort_if(!Auth::user()->isAdmin(), 403);
-
         $orders = EcommerceOrder::with('product', 'user')
             ->where('status', 'pending')
             ->latest()
@@ -22,8 +19,6 @@ class EcommerceAdminController extends Controller
 
     public function approve(EcommerceOrder $order)
     {
-        abort_if(!Auth::user()->isAdmin(), 403);
-
         DB::transaction(function () use ($order) {
             $account = $order->user->account;
 
@@ -45,8 +40,6 @@ class EcommerceAdminController extends Controller
 
     public function reject(EcommerceOrder $order)
     {
-        abort_if(!Auth::user()->isAdmin(), 403);
-
         $order->status = 'failed';
         $order->save();
 

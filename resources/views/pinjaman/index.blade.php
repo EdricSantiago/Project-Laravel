@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,11 +9,21 @@
 </head>
 
 <body class="bg-gray-100 min-h-screen">
+
+    <nav class="bg-red-700 text-white px-6 py-4 flex justify-between items-center shadow">
+        <span class="font-bold text-lg tracking-wide">Bank Untar</span>
+        <div class="flex items-center gap-4 text-sm">
+            <a href="{{ route('homepage') }}" class="hover:underline opacity-90">Homepage</a>
+            <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="border border-white px-3 py-1 rounded hover:bg-white hover:text-red-700 transition font-medium">Keluar</a>
+        </div>
+    </nav>
+    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">@csrf</form>
+
     <div class="max-w-5xl mx-auto py-8 px-4">
 
         <div class="flex justify-between items-center mb-6">
             <h5 class="text-xl font-semibold text-gray-800">Pinjaman</h5>
-            <a href="{{ route('pinjaman.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded">+ Ajukan</a>
+            <a href="{{ route('pinjaman.create') }}" class="bg-red-700 hover:bg-red-800 text-white text-sm px-4 py-2 rounded font-medium transition">+ Ajukan</a>
         </div>
 
         @if(session('success'))
@@ -21,7 +32,7 @@
 
         <div class="bg-white rounded shadow overflow-hidden">
             <table class="w-full text-sm text-left">
-                <thead class="bg-gray-50 text-gray-600 uppercase text-xs">
+                <thead class="bg-red-700 text-white text-xs uppercase">
                     <tr>
                         <th class="px-4 py-3">#</th>
                         <th class="px-4 py-3">Tujuan</th>
@@ -33,7 +44,7 @@
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     @forelse($pinjaman as $item)
-                    <tr class="hover:bg-gray-50">
+                    <tr class="hover:bg-red-50 transition">
                         <td class="px-4 py-3 text-gray-700">{{ $loop->iteration }}</td>
                         <td class="px-4 py-3 text-gray-700">{{ $item->purpose }}</td>
                         <td class="px-4 py-3 text-gray-700">{{ $item->formatted_amount }}</td>
@@ -47,7 +58,7 @@
                         ">{{ $item->status_label }}</span>
                         </td>
                         <td class="px-4 py-3 flex gap-2">
-                            <a href="{{ route('pinjaman.show', $item) }}" class="text-blue-600 hover:underline text-xs border border-blue-600 px-2 py-1 rounded">Detail</a>
+                            <a href="{{ route('pinjaman.show', $item) }}" class="text-red-700 hover:underline text-xs border border-red-700 px-2 py-1 rounded">Detail</a>
                             @if($item->status === 'pending')
                             <a href="{{ route('pinjaman.edit', $item) }}" class="text-gray-600 hover:underline text-xs border border-gray-400 px-2 py-1 rounded">Edit</a>
                             <form action="{{ route('pinjaman.destroy', $item) }}" method="POST" class="inline"
@@ -60,7 +71,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="px-4 py-6 text-center text-gray-400">Belum ada pinjaman.</td>
+                        <td colspan="6" class="px-4 py-8 text-center text-gray-400">Belum ada pinjaman.</td>
                     </tr>
                     @endforelse
                 </tbody>

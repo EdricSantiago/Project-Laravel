@@ -21,6 +21,9 @@ class User extends Authenticatable
         'pin',
         'status',
         'failed_pin_attempts',
+        'failed_login_attempts',
+        'locked_until',
+        'pin_changed_at',
     ];
 
     protected $hidden = [
