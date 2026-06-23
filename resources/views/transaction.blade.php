@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="flex h-screen bg-bank-bg" x-data="{
-    activeMenu: null,
+    activeMenu: '{{ request('menu') }}' || null,
     pinModal: false,
     pendingForm: null,
     pinInput: '',
@@ -15,7 +15,8 @@
         this.pinError = null;
         this.pinInput = '';
     }
-}">
+}"
+x-init="if(window.location.search.includes('menu=')) window.history.replaceState({}, '', window.location.pathname)">
     @include('partials.sidebar')
 
     <div class="flex-1 flex flex-col overflow-hidden">
