@@ -14,9 +14,10 @@
         <span class="font-bold text-lg tracking-wide">Bank Untar</span>
         <div class="flex items-center gap-4 text-sm">
             <a href="{{ route('homepage') }}" class="hover:underline opacity-90">Homepage</a>
-            <a href="{{ route('homepage') }}" class="border border-white px-3 py-1 rounded hover:bg-white hover:text-red-700 transition font-medium">Keluar</a>
+            <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="border border-white px-3 py-1 rounded hover:bg-white hover:text-red-700 transition font-medium">Keluar</a>
         </div>
     </nav>
+    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">@csrf</form>
 
     <div class="max-w-lg mx-auto py-8 px-4">
 

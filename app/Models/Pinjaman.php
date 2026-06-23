@@ -15,15 +15,20 @@ class Pinjaman extends Model
         'total_repayment',
         'purpose',
         'status',
+        'approved_at',    
+        'rejected_at',    
+        'rejection_reason',
     ];
 
     protected $casts = [
-        'amount' => 'decimal:2',
-        'interest_rate' => 'decimal:2',
+        'amount'              => 'decimal:2',
+        'interest_rate'       => 'decimal:2',
         'monthly_installment' => 'decimal:2',
-        'total_repayment' => 'decimal:2',
+        'total_repayment'     => 'decimal:2',
+        'approved_at'         => 'datetime', 
+        'rejected_at'         => 'datetime', 
     ];
-    
+
     public function account()
     {
         return $this->belongsTo(Account::class);
@@ -47,11 +52,11 @@ class Pinjaman extends Model
     public function getStatusLabelAttribute(): string
     {
         return match($this->status) {
-            'pending' => 'Menunggu',
-            'approved' => 'Disetujui',
-            'rejected' => 'Ditolak',
-            'completed' => 'Lunas',
-            default => $this->status,
+            'pending'   => 'Menunggu',
+            'approved'  => 'Disetujui',
+            'rejected'  => 'Ditolak',
+            'completed' => 'Lunas',  
+            default     => $this->status,
         };
     }
 }
