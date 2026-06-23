@@ -18,12 +18,6 @@
 
                 <!-- Balance Card -->
                 <div class="bg-white rounded-2xl border border-bank-border p-8 relative overflow-hidden">
-                    <!-- Decorative circle -->
-                    <div class="absolute -top-8 -right-8 w-40 h-40 bg-red-50 rounded-full opacity-60"></div>
-                    <div
-                        class="absolute top-6 right-6 w-14 h-14 bg-red-100/50 rounded-xl flex items-center justify-center">
-                        <i class="material-icons text-red-200 text-2xl">visibility_off</i>
-                    </div>
 
                     <div class="relative">
                         <p class="text-sm text-gray-400 font-medium mb-3">Total Balance</p>
@@ -104,13 +98,11 @@
                                 </div>
                                 <span class="text-[11px] font-semibold text-gray-500 text-center">Portofolio</span>
                             </a>
-                            <a href="{{ route('transaction.history') }}" class="flex flex-col items-center gap-2 group">
-                                <div
-                                    class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center group-hover:bg-gray-200 transition-colors">
+                            <a href="{{ route('transaction.index', ['menu' => 'history']) }}" class="flex flex-col items-center gap-2 group">
+                                <div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center group-hover:bg-gray-200 transition-colors">
                                     <i class="material-icons text-gray-500 text-xl">receipt</i>
                                 </div>
-                                <span
-                                    class="text-[11px] font-semibold text-gray-500 text-center leading-tight">E-Statement</span>
+                                <span class="text-[11px] font-semibold text-gray-500 text-center leading-tight">E-Statement</span>
                             </a>
                             <a href="{{ auth()->user()->role === 'admin' ? route('admin.pinjaman.index') : route('pinjaman.index') }}"
                                 class="flex flex-col items-center gap-2 group">
@@ -127,15 +119,36 @@
                     <div class="bg-white rounded-2xl border border-bank-border p-6">
                         <div class="flex items-center justify-between mb-6">
                             <h3 class="text-lg font-bold text-gray-900">Riwayat Transaksi</h3>
-                            <a href="{{ route('transaction.history') }}"
+                            <a href="{{ route('transaction.index', ['menu' => 'history']) }}"
                                 class="text-gray-300 hover:text-bank-red transition-colors">
                                 <i class="material-icons text-xl">chevron_right</i>
                             </a>
                         </div>
-                        <div class="flex flex-col items-center justify-center py-6 text-center">
-                            <i class="material-icons text-gray-200 text-5xl mb-3">history</i>
-                            <p class="text-sm text-gray-300 font-medium">Belum ada transaksi terbaru</p>
-                        </div>
+                        @if(isset($transactions) && $transactions->count() > 0)
+                            <div class="space-y-4">
+                                {{-- Mengambil 4 transaksi terakhir agar desain tetap rapi --}}
+                                @foreach($transactions->take(4) as $trx)
+                                    <div class="flex justify-between items-center border-b border-gray-100 pb-3 last:border-0 last:pb-0">
+                                        <div>
+                                            <span class="font-semibold text-gray-800 text-sm capitalize">{{ $trx->type }}</span>
+                                            <p class="text-gray-400 text-xs">{{ $trx->created_at->format('d M Y, H:i') }}</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="{{ $trx->type === 'deposit' ? 'text-emerald-600' : 'text-bank-red' }} font-bold text-sm">
+                                                {{ $trx->type === 'deposit' ? '+' : '-' }}
+                                                Rp {{ number_format($trx->amount, 0, ',', '.') }}
+                                            </span>
+                                            <p class="text-xs text-gray-400 capitalize">{{ $trx->status }}</p>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="flex flex-col items-center justify-center py-6 text-center">
+                                <i class="material-icons text-gray-200 text-5xl mb-3">history</i>
+                                <p class="text-sm text-gray-300 font-medium">Belum ada transaksi terbaru</p>
+                            </div>
+                        @endif
                     </div>
                 </div>
 
