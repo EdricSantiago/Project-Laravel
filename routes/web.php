@@ -6,7 +6,9 @@ use App\Http\Controllers\AccountsController;
 use App\Http\Controllers\SecurityController;
 use App\Http\Controllers\PinjamanController;
 use App\Http\Controllers\SahamController;
+use App\Http\Middleware\AdminMiddleware;
 use App\Http\Controllers\InvestasiController;
+use App\Http\Controllers\Admin\AdminPinjamanController;
 use App\Http\Controllers\EcommerceProductController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SettingsController;
@@ -15,12 +17,21 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+Route::middleware(['auth', AdminMiddleware::class]) // ganti string 'admin' dengan class
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        Route::get('pinjaman', [AdminPinjamanController::class, 'index'])->name('pinjaman.index');
+        Route::get('pinjaman/{pinjaman}', [AdminPinjamanController::class, 'show'])->name('pinjaman.show');
+        Route::patch('pinjaman/{pinjaman}/approve', [AdminPinjamanController::class, 'approve'])->name('pinjaman.approve');
+        Route::patch('pinjaman/{pinjaman}/reject', [AdminPinjamanController::class, 'reject'])->name('pinjaman.reject');
+    });
 Route::middleware('guest')->group(function () {
     Route::get('/login',    [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login',   [AuthController::class, 'login']);
 
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
-    Route::post('/register',[AuthController::class, 'register']);
+    Route::post('/register', [AuthController::class, 'register']);
 });
 
 Route::middleware('auth')->group(function () {
@@ -39,7 +50,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/account',          [AccountsController::class, 'show'])->name('account.show');
     Route::post('/account/topup',   [AccountsController::class, 'topup'])->name('account.topup');
-    Route::post('/account/withdraw',[AccountsController::class, 'withdraw'])->name('account.withdraw');
+    Route::post('/account/withdraw', [AccountsController::class, 'withdraw'])->name('account.withdraw');
 
     Route::get('/transaction',              [TransactionController::class, 'index'])->name('transaction.index');
     Route::post('/transaction/deposit',     [TransactionController::class, 'deposit'])->name('transaction.deposit');
@@ -48,27 +59,26 @@ Route::middleware('auth')->group(function () {
     Route::post('/transaction/transfer',    [TransactionController::class, 'transfer'])->name('transaction.transfer')
         ->middleware('pin.cooldown');
     Route::get('/transaction/history',      [TransactionController::class, 'history'])->name('transaction.history');
-    Route::post('/transaction/pay-insurance',[TransactionController::class, 'payInsurance'])->name('transaction.payInsurance')
+    Route::post('/transaction/pay-insurance', [TransactionController::class, 'payInsurance'])->name('transaction.payInsurance')
         ->middleware('pin.cooldown');
     Route::get('/transaction/export-pdf',   [TransactionController::class, 'exportPdf'])->name('transaction.exportPdf');
 
     Route::prefix('security')->group(function () {
-    Route::post('/setup-pin',       [SecurityController::class, 'setupPin'])->name('security.setup');
-    Route::post('/panic',           [SecurityController::class, 'freezeAccount'])->name('security.panic');
-    Route::post('/change-pin',      [SecurityController::class, 'changePin'])->name('security.change');
-    Route::post('/verify-pin',      [SecurityController::class, 'verifyPin'])->name('security.verify');
-    Route::get('/status',           [SecurityController::class, 'getSecurityStatus'])->name('security.status');
-    Route::post('/change-password', [SecurityController::class, 'changePassword'])->name('security.password');
+        Route::post('/setup-pin',       [SecurityController::class, 'setupPin'])->name('security.setup');
+        Route::post('/panic',           [SecurityController::class, 'freezeAccount'])->name('security.panic');
+        Route::post('/change-pin',      [SecurityController::class, 'changePin'])->name('security.change');
+        Route::post('/verify-pin',      [SecurityController::class, 'verifyPin'])->name('security.verify');
+        Route::get('/status',           [SecurityController::class, 'getSecurityStatus'])->name('security.status');
+        Route::post('/change-password', [SecurityController::class, 'changePassword'])->name('security.password');
     });
 
     Route::get('/settings/security-log', [SettingsController::class, 'securityLog'])->name('settings.security-log');
 
     Route::prefix('ecommerce')->name('ecommerce.')->group(function () {
-    Route::get('/', [EcommerceProductController::class, 'index'])->name('index');
-    Route::get('/buy/{product}', [EcommerceProductController::class, 'buy'])->name('buy');
-    Route::post('/buy/{product}', [EcommerceProductController::class, 'process'])->name('process');
-    Route::get('/success/{order}', [EcommerceProductController::class, 'success'])->name('success');
-    Route::get('/history', [EcommerceProductController::class, 'history'])->name('history');
+        Route::get('/', [EcommerceProductController::class, 'index'])->name('index');
+        Route::get('/buy/{product}', [EcommerceProductController::class, 'buy'])->name('buy');
+        Route::post('/buy/{product}', [EcommerceProductController::class, 'process'])->name('process');
+        Route::get('/success/{order}', [EcommerceProductController::class, 'success'])->name('success');
+        Route::get('/history', [EcommerceProductController::class, 'history'])->name('history');
     });
-
 });
