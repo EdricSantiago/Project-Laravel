@@ -1,88 +1,107 @@
-<!DOCTYPE html>
-<html lang="id">
+@extends('layouts.app')
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detail Pinjaman</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
+@section('title', 'Detail Pinjaman - Bank Untar')
 
-<body class="bg-gray-100 min-h-screen">
+@section('content')
+<div class="flex h-screen bg-bank-bg">
+    @include('partials.sidebar')
 
-    <nav class="bg-red-700 text-white px-6 py-4 flex justify-between items-center shadow">
-        <span class="font-bold text-lg tracking-wide">Bank Untar</span>
-        <div class="flex items-center gap-4 text-sm">
-            <a href="{{ route('homepage') }}" class="hover:underline opacity-90">Homepage</a>
-            <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="border border-white px-3 py-1 rounded hover:bg-white hover:text-red-700 transition font-medium">Keluar</a>
-        </div>
-    </nav>
-    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">@csrf</form>
+    <div class="flex-1 flex flex-col overflow-hidden">
+        @include('partials.topnav')
 
-    <div class="max-w-lg mx-auto py-8 px-4">
+        <main class="flex-1 overflow-y-auto p-8">
+            <div class="max-w-lg mx-auto space-y-6">
 
-        <h5 class="text-xl font-semibold text-gray-800 mb-6">Detail Pinjaman</h5>
+                {{-- Breadcrumb --}}
+                <div class="flex items-center gap-2 text-xs text-gray-400">
+                    <a href="{{ route('pinjaman.index') }}" class="hover:text-bank-red transition">Pinjaman</a>
+                    <i class="material-icons text-xs">chevron_right</i>
+                    <span class="text-gray-600">Detail</span>
+                </div>
 
-        <div class="bg-white rounded shadow overflow-hidden mb-4">
-            <div class="bg-red-700 px-4 py-3">
-                <p class="text-white text-xs uppercase tracking-wide font-medium">Informasi Pinjaman</p>
-            </div>
-            <table class="w-full text-sm">
-                <tr class="border-b">
-                    <th class="px-4 py-3 text-left text-gray-500 w-1/3 font-medium">Tujuan</th>
-                    <td class="px-4 py-3 text-gray-800">{{ $pinjaman->purpose }}</td>
-                </tr>
-                <tr class="border-b">
-                    <th class="px-4 py-3 text-left text-gray-500 font-medium">Jumlah</th>
-                    <td class="px-4 py-3 text-gray-800 font-semibold">{{ $pinjaman->formatted_amount }}</td>
-                </tr>
-                <tr class="border-b">
-                    <th class="px-4 py-3 text-left text-gray-500 font-medium">Tenor</th>
-                    <td class="px-4 py-3 text-gray-800">{{ $pinjaman->tenor_months }} bulan</td>
-                </tr>
-                <tr class="border-b">
-                    <th class="px-4 py-3 text-left text-gray-500 font-medium">Bunga</th>
-                    <td class="px-4 py-3 text-gray-800">{{ $pinjaman->interest_rate }}% / bulan</td>
-                </tr>
-                <tr class="border-b">
-                    <th class="px-4 py-3 text-left text-gray-500 font-medium">Cicilan/Bulan</th>
-                    <td class="px-4 py-3 text-red-700 font-semibold">{{ $pinjaman->formatted_monthly_installment }}</td>
-                </tr>
-                <tr class="border-b">
-                    <th class="px-4 py-3 text-left text-gray-500 font-medium">Total Bayar</th>
-                    <td class="px-4 py-3 text-gray-800 font-semibold">{{ $pinjaman->formatted_total_repayment }}</td>
-                </tr>
-                <tr class="border-b">
-                    <th class="px-4 py-3 text-left text-gray-500 font-medium">Status</th>
-                    <td class="px-4 py-3">
-                        <span class="px-2 py-1 rounded text-xs font-medium
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-extrabold text-gray-900">Detail Pinjaman</h1>
+                        <p class="text-sm text-gray-400 mt-0.5">Diajukan pada {{ $pinjaman->created_at->format('d M Y') }}</p>
+                    </div>
+                    <span class="px-3 py-1 rounded-full text-sm font-semibold
                         {{ $pinjaman->status === 'approved' ? 'bg-green-100 text-green-700' : '' }}
-                        {{ $pinjaman->status === 'pending' ? 'bg-yellow-100 text-yellow-700' : '' }}
-                        {{ $pinjaman->status === 'rejected' ? 'bg-red-100 text-red-700' : '' }}
-                        {{ $pinjaman->status === 'lunas' ? 'bg-blue-100 text-blue-700' : '' }}
+                        {{ $pinjaman->status === 'pending'  ? 'bg-yellow-100 text-yellow-700' : '' }}
+                        {{ $pinjaman->status === 'rejected' ? 'bg-red-100 text-red-600' : '' }}
+                        {{ $pinjaman->status === 'lunas'    ? 'bg-blue-100 text-blue-700' : '' }}
                     ">{{ $pinjaman->status_label }}</span>
-                    </td>
-                </tr>
-                <tr>
-                    <th class="px-4 py-3 text-left text-gray-500 font-medium">Tanggal</th>
-                    <td class="px-4 py-3 text-gray-800">{{ $pinjaman->created_at->format('d M Y') }}</td>
-                </tr>
-            </table>
-        </div>
+                </div>
 
-        <div class="flex gap-2">
-            <a href="{{ route('pinjaman.index') }}" class="border border-gray-400 text-gray-600 hover:bg-gray-50 px-4 py-2 rounded text-sm transition">← Kembali</a>
-            @if($pinjaman->status === 'pending')
-            <a href="{{ route('pinjaman.edit', $pinjaman) }}" class="border border-red-700 text-red-700 hover:bg-red-50 px-4 py-2 rounded text-sm transition">Edit</a>
-            <form action="{{ route('pinjaman.destroy', $pinjaman) }}" method="POST" class="inline"
-                onsubmit="return confirm('Yakin hapus?')">
-                @csrf @method('DELETE')
-                <button class="border border-red-400 text-red-600 hover:bg-red-50 px-4 py-2 rounded text-sm transition">Hapus</button>
-            </form>
-            @endif
-        </div>
+                {{-- Summary Banner --}}
+                <div class="bg-bank-red rounded-2xl p-6 text-white">
+                    <p class="text-red-200 text-xs uppercase tracking-wide font-medium mb-1">Cicilan per Bulan</p>
+                    <p class="text-3xl font-extrabold">{{ $pinjaman->formatted_monthly_installment }}</p>
+                    <div class="mt-4 flex gap-8 text-sm">
+                        <div>
+                            <p class="text-red-300 text-xs font-medium mb-0.5">Jumlah Pinjaman</p>
+                            <p class="font-bold">{{ $pinjaman->formatted_amount }}</p>
+                        </div>
+                        <div>
+                            <p class="text-red-300 text-xs font-medium mb-0.5">Tenor</p>
+                            <p class="font-bold">{{ $pinjaman->tenor_months }} Bulan</p>
+                        </div>
+                        <div>
+                            <p class="text-red-300 text-xs font-medium mb-0.5">Total Bayar</p>
+                            <p class="font-bold">{{ $pinjaman->formatted_total_repayment }}</p>
+                        </div>
+                    </div>
+                </div>
 
+                {{-- Detail Card --}}
+                <div class="bg-white rounded-2xl border border-bank-border overflow-hidden">
+                    <div class="px-6 py-4 border-b border-bank-border">
+                        <h2 class="text-sm font-bold text-gray-700">Informasi Pinjaman</h2>
+                    </div>
+                    <div class="divide-y divide-gray-50">
+                        <div class="px-6 py-3.5 flex justify-between items-center">
+                            <span class="text-xs text-gray-400 font-semibold uppercase tracking-wide">Tujuan</span>
+                            <span class="text-sm text-gray-800 font-semibold">{{ $pinjaman->purpose }}</span>
+                        </div>
+                        <div class="px-6 py-3.5 flex justify-between items-center">
+                            <span class="text-xs text-gray-400 font-semibold uppercase tracking-wide">Bunga</span>
+                            <span class="text-sm text-gray-800">{{ $pinjaman->interest_rate }}% / bulan</span>
+                        </div>
+                        <div class="px-6 py-3.5 flex justify-between items-center">
+                            <span class="text-xs text-gray-400 font-semibold uppercase tracking-wide">Tanggal Pengajuan</span>
+                            <span class="text-sm text-gray-800">{{ $pinjaman->created_at->format('d M Y') }}</span>
+                        </div>
+                        <div class="px-6 py-3.5 flex justify-between items-center">
+                            <span class="text-xs text-gray-400 font-semibold uppercase tracking-wide">Status</span>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold
+                                {{ $pinjaman->status === 'approved' ? 'bg-green-100 text-green-700' : '' }}
+                                {{ $pinjaman->status === 'pending'  ? 'bg-yellow-100 text-yellow-700' : '' }}
+                                {{ $pinjaman->status === 'rejected' ? 'bg-red-100 text-red-600' : '' }}
+                                {{ $pinjaman->status === 'lunas'    ? 'bg-blue-100 text-blue-700' : '' }}
+                            ">{{ $pinjaman->status_label }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Actions --}}
+                <div class="flex gap-3">
+                    <a href="{{ route('pinjaman.index') }}"
+                        class="inline-flex items-center gap-1.5 border border-gray-200 text-gray-600 hover:bg-gray-50 px-4 py-2 rounded-xl text-sm transition">
+                        <i class="material-icons text-base">arrow_back</i>
+                        Kembali
+                    </a>
+                    @if($pinjaman->status === 'pending')
+                    <a href="{{ route('pinjaman.edit', $pinjaman) }}"
+                        class="border border-red-200 text-bank-red hover:bg-red-50 px-4 py-2 rounded-xl text-sm transition">Edit</a>
+                    <form action="{{ route('pinjaman.destroy', $pinjaman) }}" method="POST" class="inline"
+                        onsubmit="return confirm('Yakin hapus pinjaman ini?')">
+                        @csrf @method('DELETE')
+                        <button class="border border-red-200 text-red-600 hover:bg-red-50 px-4 py-2 rounded-xl text-sm transition">Hapus</button>
+                    </form>
+                    @endif
+                </div>
+
+            </div>
+        </main>
     </div>
-</body>
-
-</html>
+</div>
+@endsection
