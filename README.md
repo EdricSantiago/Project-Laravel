@@ -23,4 +23,4 @@ Our goal:
 - [Edric(EdricSantiago)]
 - [Steve(Lyinceer)]
 - [Jericho(Kazuhash)]
-- [Yohana]
+- [Yohana(yonaXway)]
