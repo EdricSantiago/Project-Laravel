@@ -25,7 +25,7 @@
 
                                 <!-- Bagian Update PIN -->
                                 <div>
-                                    <h3 class="text-3xl font-bold text-gray-900 mb-4">Perbarui PIN</h3>
+                                    <h3 class="text-3xl font-bold text-gray-900 mb-4">Update PIN</h3>
                                     <p class="text-gray-500 leading-relaxed max-w-md">
                                         Pastikan akun Anda tetap aman dengan rutin memperbarui PIN transaksi. Gunakan PIN yang unik dan sulit ditebak.
                                     </p>
@@ -60,9 +60,9 @@
                                 <!-- Bagian Update Password -->
                                 <div class="pt-8 mt-8 border-t border-gray-100">
                                     <div>
-                                        <h3 class="text-3xl font-bold text-gray-900 mb-4">Perbarui Password</h3>
+                                        <h3 class="text-3xl font-bold text-gray-900 mb-4">Update Password</h3>
                                         <p class="text-gray-500 leading-relaxed max-w-md mb-6">
-                                            Untuk keamanan lebih, disarankan mengganti password akun Anda secara berkala. Gunakan kombinasi huruf, angka, dan simbol yang kuat.
+                                            Untuk keamanan akun, disarankan mengganti password akun Anda secara berkala. Gunakan kombinasi huruf, angka, dan simbol yang kuat.
                                         </p>
                                     </div>
 
@@ -104,16 +104,16 @@
                                     <div class="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center text-bank-red mb-8">
                                         <i class="material-icons text-3xl">report_problem</i>
                                     </div>
-                                    <h3 class="text-2xl font-bold text-bank-red mb-4">Bekukan Akun</h3>
+                                    <h3 class="text-2xl font-bold text-bank-red mb-4">Freeze Akun</h3>
                                     <p class="text-gray-500 text-sm leading-relaxed mb-8">
-                                        Jika Anda mencurigai adanya aktivitas tidak sah, segera bekukan akun Anda. Semua transaksi akan diblokir seketika.
+                                        Jika Anda mencurigai adanya aktivitas tidak sah, segera bekukan akun Anda. Semua transaksi akan diblokir.
                                     </p>
                                     <form action="{{ route('security.panic') }}" method="POST" class="w-full max-w-xs mt-auto"
                                         onsubmit="return confirm('Apakah Anda yakin ingin membekukan akun? Semua transaksi akan diblokir.')">
                                         @csrf
                                         <button type="submit"
                                             class="w-full bg-bank-red text-white py-5 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-red-900 transition-all active:scale-95 shadow-xl shadow-red-200">
-                                            <i class="material-icons">ac_unit</i> BEKUKAN AKUN
+                                            <i class="material-icons">ac_unit</i> Freeze Account
                                         </button>
                                     </form>
                                 </div>
@@ -126,10 +126,9 @@
                         <div class="bg-gray-50/50 px-8 py-4 border-b border-bank-border flex items-center justify-between">
                             <div class="flex items-center gap-3">
                                 <i class="material-icons text-bank-red text-xl">history</i>
-                                <h2 class="text-lg font-bold text-gray-900">Riwayat Aktivitas Keamanan</h2>
+                                <h2 class="text-lg font-bold text-gray-900">Security Logs</h2>
                             </div>
-                            <span class="text-xs text-gray-400">Riwayat aktivitas keamanan akun Anda</span>
-                        </div>
+
 
                         <div class="p-6">
                             @if($logs->isEmpty())
