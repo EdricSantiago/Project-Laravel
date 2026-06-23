@@ -24,7 +24,6 @@ class AccountsController extends Controller
         $user    = Auth::user();
         $account = Account::where('user_id', $user->id)->first();
 
-        // Fetch recent transactions where this account is sender or receiver
         $transactions = collect();
         if ($account) {
             $transactions = Transaction::with(['sender.user', 'receiver.user'])

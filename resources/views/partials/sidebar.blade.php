@@ -31,8 +31,9 @@
                 {{ $currentRoute === 'transaction.index' ? 'text-bank-red bg-red-50/70 border-l-[3px] border-bank-red' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700' }}">
             <i class="material-icons-outlined text-[20px]">swap_horiz</i> Transfer
         </a>
-        <a href="#"
-            class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition-all text-gray-500 hover:bg-gray-50 hover:text-gray-700">
+        <a href="{{ route('ecommerce.index') }}"
+            class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition-all
+                {{ str_starts_with($currentRoute, 'ecommerce.') ? 'text-bank-red bg-red-50/70 border-l-[3px] border-bank-red' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700' }}">
             <i class="material-icons-outlined text-[20px]">storefront</i> E-Commerce
         </a>
         <a href="{{ route('security') }}"
@@ -40,6 +41,13 @@
                 {{ $currentRoute === 'security' ? 'text-bank-red bg-red-50/70 border-l-[3px] border-bank-red' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700' }}">
             <i class="material-icons-outlined text-[20px]">security</i> Security Center
         </a>
+        @if(Auth::user()->isAdmin())
+        <a href="{{ route('ecommerce.admin.index') }}"
+            class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition-all
+                {{ str_starts_with($currentRoute, 'ecommerce.admin.') ? 'text-bank-red bg-red-50/70 border-l-[3px] border-bank-red' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700' }}">
+            <i class="material-icons-outlined text-[20px]">admin_panel_settings</i> Konfirmasi Top Up
+        </a>
+        @endif
     </nav>
 
     <!-- Bottom Section -->

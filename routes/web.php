@@ -8,6 +8,7 @@ use App\Http\Controllers\PinjamanController;
 use App\Http\Controllers\SahamController;
 use App\Http\Controllers\InvestasiController;
 use App\Http\Controllers\EcommerceProductController;
+use App\Http\Controllers\EcommerceAdminController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SettingsController;
 
@@ -67,7 +68,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/buy/{product}', [EcommerceProductController::class, 'buy'])->name('buy');
     Route::post('/buy/{product}', [EcommerceProductController::class, 'process'])->name('process');
     Route::get('/success/{order}', [EcommerceProductController::class, 'success'])->name('success');
-    Route::get('/history', [EcommerceProductController::class, 'history'])->name('history');
+    });
+
+    Route::prefix('ecommerce-admin')->name('ecommerce.admin.')->group(function () {
+    Route::get('/', [EcommerceAdminController::class, 'index'])->name('index');
+    Route::post('/{order}/approve', [EcommerceAdminController::class, 'approve'])->name('approve');
+    Route::post('/{order}/reject', [EcommerceAdminController::class, 'reject'])->name('reject');
     });
 
 });
