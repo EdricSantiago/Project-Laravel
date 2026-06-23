@@ -1,88 +1,105 @@
-<!DOCTYPE html>
-<html lang="id">
+@extends('layouts.app')
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pinjaman</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
+@section('title', 'Pinjaman - Bank Untar')
 
-<body class="bg-gray-100 min-h-screen">
+@section('content')
+<div class="flex h-screen bg-bank-bg">
+    @include('partials.sidebar')
 
-    <nav class="bg-red-700 text-white px-6 py-4 flex justify-between items-center shadow">
-        <span class="font-bold text-lg tracking-wide">Bank Untar</span>
-        <div class="flex items-center gap-4 text-sm">
-            <a href="{{ route('homepage') }}" class="hover:underline opacity-90">Homepage</a>
-            <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="border border-white px-3 py-1 rounded hover:bg-white hover:text-red-700 transition font-medium">Keluar</a>
-        </div>
-    </nav>
-    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">@csrf</form>
+    <div class="flex-1 flex flex-col overflow-hidden">
+        @include('partials.topnav')
 
-    <div class="max-w-5xl mx-auto py-8 px-4">
+        <main class="flex-1 overflow-y-auto p-8">
+            <div class="max-w-5xl mx-auto space-y-6">
 
-        <div class="flex justify-between items-center mb-6">
-            <h5 class="text-xl font-semibold text-gray-800">Pinjaman</h5>
-            <a href="{{ route('pinjaman.create') }}" class="bg-red-700 hover:bg-red-800 text-white text-sm px-4 py-2 rounded font-medium transition">+ Ajukan</a>
-        </div>
+                @if(session('success'))
+                <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl text-sm">
+                    {{ session('success') }}
+                </div>
+                @endif
 
-        @if(session('success'))
-        <div class="bg-green-100 text-green-800 px-4 py-3 rounded mb-4">{{ session('success') }}</div>
-        @endif
+                {{-- Header --}}
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-extrabold text-gray-900">Pinjaman</h1>
+                        <p class="text-sm text-gray-400 mt-0.5">Kelola pengajuan pinjaman Anda.</p>
+                    </div>
+                    <a href="{{ route('pinjaman.create') }}"
+                        class="inline-flex items-center gap-2 bg-bank-red hover:bg-red-800 text-white text-sm px-4 py-2 rounded-xl font-semibold transition shadow-sm">
+                        <i class="material-icons text-base">add</i>
+                        Ajukan Pinjaman
+                    </a>
+                </div>
 
-        <div class="bg-white rounded shadow overflow-hidden">
-            <table class="w-full text-sm text-left">
-                <thead class="bg-red-700 text-white text-xs uppercase">
-                    <tr>
-                        <th class="px-4 py-3">#</th>
-                        <th class="px-4 py-3">Tujuan</th>
-                        <th class="px-4 py-3">Jumlah</th>
-                        <th class="px-4 py-3">Tenor</th>
-                        <th class="px-4 py-3">Status</th>
-                        <th class="px-4 py-3">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100">
-                    @forelse($pinjaman as $item)
-                    <tr class="hover:bg-red-50 transition">
-                        <td class="px-4 py-3 text-gray-700">{{ $loop->iteration }}</td>
-                        <td class="px-4 py-3 text-gray-700">{{ $item->purpose }}</td>
-                        <td class="px-4 py-3 text-gray-700">{{ $item->formatted_amount }}</td>
-                        <td class="px-4 py-3 text-gray-700">{{ $item->tenor_months }} bln</td>
-                        <td class="px-4 py-3">
-                            <span class="px-2 py-1 rounded text-xs font-medium
-                            {{ $item->status === 'approved' ? 'bg-green-100 text-green-700' : '' }}
-                            {{ $item->status === 'pending' ? 'bg-yellow-100 text-yellow-700' : '' }}
-                            {{ $item->status === 'rejected' ? 'bg-red-100 text-red-700' : '' }}
-                            {{ $item->status === 'lunas' ? 'bg-blue-100 text-blue-700' : '' }}
-                        ">{{ $item->status_label }}</span>
-                        </td>
-                        <td class="px-4 py-3 flex gap-2">
-                            <a href="{{ route('pinjaman.show', $item) }}" class="text-red-700 hover:underline text-xs border border-red-700 px-2 py-1 rounded">Detail</a>
-                            @if($item->status === 'pending')
-                            <a href="{{ route('pinjaman.edit', $item) }}" class="text-gray-600 hover:underline text-xs border border-gray-400 px-2 py-1 rounded">Edit</a>
-                            <form action="{{ route('pinjaman.destroy', $item) }}" method="POST" class="inline"
-                                onsubmit="return confirm('Yakin hapus?')">
-                                @csrf @method('DELETE')
-                                <button class="text-red-600 text-xs border border-red-400 px-2 py-1 rounded hover:bg-red-50">Hapus</button>
-                            </form>
-                            @endif
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="6" class="px-4 py-8 text-center text-gray-400">Belum ada pinjaman.</td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+                {{-- Table Card --}}
+                <div class="bg-white rounded-2xl border border-bank-border overflow-hidden">
+                    <div class="px-6 py-4 border-b border-bank-border">
+                        <h2 class="text-sm font-bold text-gray-700">Daftar Pinjaman</h2>
+                    </div>
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="bg-gray-50 text-xs text-gray-400 uppercase tracking-wide border-b border-bank-border">
+                                <th class="px-6 py-3 text-left font-medium">#</th>
+                                <th class="px-6 py-3 text-left font-medium">Tujuan</th>
+                                <th class="px-6 py-3 text-left font-medium">Jumlah</th>
+                                <th class="px-6 py-3 text-left font-medium">Tenor</th>
+                                <th class="px-6 py-3 text-left font-medium">Status</th>
+                                <th class="px-6 py-3 text-left font-medium">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-50">
+                            @forelse($pinjaman as $item)
+                            <tr class="hover:bg-gray-50/70 transition">
+                                <td class="px-6 py-4 text-gray-400 text-xs">{{ $loop->iteration }}</td>
+                                <td class="px-6 py-4 text-gray-800 font-semibold">{{ $item->purpose }}</td>
+                                <td class="px-6 py-4 text-gray-700">{{ $item->formatted_amount }}</td>
+                                <td class="px-6 py-4 text-gray-500">{{ $item->tenor_months }} bln</td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold
+                                        {{ $item->status === 'approved' ? 'bg-green-100 text-green-700' : '' }}
+                                        {{ $item->status === 'pending'  ? 'bg-yellow-100 text-yellow-700' : '' }}
+                                        {{ $item->status === 'rejected' ? 'bg-red-100 text-red-600' : '' }}
+                                        {{ $item->status === 'lunas'    ? 'bg-blue-100 text-blue-700' : '' }}
+                                    ">{{ $item->status_label }}</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <a href="{{ route('pinjaman.show', $item) }}"
+                                            class="text-xs text-bank-red border border-red-200 hover:bg-red-50 px-3 py-1 rounded-lg transition">Detail</a>
+                                        @if($item->status === 'pending')
+                                        <a href="{{ route('pinjaman.edit', $item) }}"
+                                            class="text-xs text-gray-600 border border-gray-200 hover:bg-gray-50 px-3 py-1 rounded-lg transition">Edit</a>
+                                        <form action="{{ route('pinjaman.destroy', $item) }}" method="POST" class="inline"
+                                            onsubmit="return confirm('Yakin hapus pinjaman ini?')">
+                                            @csrf @method('DELETE')
+                                            <button class="text-xs text-red-500 border border-red-200 hover:bg-red-50 px-3 py-1 rounded-lg transition">Hapus</button>
+                                        </form>
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="6" class="px-6 py-16 text-center">
+                                    <div class="flex flex-col items-center gap-2">
+                                        <i class="material-icons text-gray-200 text-5xl">account_balance_wallet</i>
+                                        <p class="text-sm text-gray-300 font-medium">Belum ada pinjaman.</p>
+                                        <a href="{{ route('pinjaman.create') }}" class="text-sm text-bank-red hover:underline font-semibold">Ajukan sekarang</a>
+                                    </div>
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                    @if($pinjaman->hasPages())
+                    <div class="px-6 py-4 border-t border-bank-border">
+                        {{ $pinjaman->links() }}
+                    </div>
+                    @endif
+                </div>
 
-        <div class="mt-4">
-            {{ $pinjaman->links() }}
-        </div>
-
+            </div>
+        </main>
     </div>
-</body>
-
-</html>
+</div>
+@endsection
