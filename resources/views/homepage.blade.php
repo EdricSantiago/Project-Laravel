@@ -97,7 +97,7 @@
                                 </div>
                                 <span class="text-[11px] font-semibold text-gray-500 text-center">Deposito</span>
                             </a>
-                            <a href="#" class="flex flex-col items-center gap-2 group">
+                            <a href="{{ route('investasi.index') }}" class="flex flex-col items-center gap-2 group">
                                 <div
                                     class="w-12 h-12 bg-rose-50 rounded-xl flex items-center justify-center group-hover:bg-rose-100 transition-colors">
                                     <i class="material-icons text-rose-500 text-xl">trending_up</i>
