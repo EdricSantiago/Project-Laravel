@@ -48,7 +48,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/transaction/transfer',    [TransactionController::class, 'transfer'])->name('transaction.transfer')
         ->middleware('pin.cooldown');
     Route::get('/transaction/history',      [TransactionController::class, 'history'])->name('transaction.history');
-    Route::post('/transaction/pay-insurance',[TransactionController::class, 'payInsurance'])->name('transaction.payInsurance');
+    Route::post('/transaction/pay-insurance',[TransactionController::class, 'payInsurance'])->name('transaction.payInsurance')
+        ->middleware('pin.cooldown');
     Route::get('/transaction/export-pdf',   [TransactionController::class, 'exportPdf'])->name('transaction.exportPdf');
 
     Route::prefix('security')->group(function () {
