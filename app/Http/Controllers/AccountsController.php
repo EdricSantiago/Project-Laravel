@@ -16,7 +16,16 @@ class AccountsController extends Controller
         $user    = Auth::user();
         $account = Account::where('user_id', $user->id)->first();
 
-        return view('homepage', compact('user', 'account'));
+        $transactions = collect();
+        if ($account) {
+            $transactions = Transaction::where('sender_id', $account->id)
+                ->orWhere('receiver_id', $account->id)
+                ->orderByDesc('created_at')
+                ->take(4)
+                ->get();
+        }
+
+        return view('homepage', compact('user', 'account', 'transactions'));
     }
 
     public function accounts(): View
