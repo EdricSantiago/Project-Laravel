@@ -10,6 +10,7 @@ use App\Http\Middleware\AdminMiddleware;
 use App\Http\Controllers\InvestasiController;
 use App\Http\Controllers\Admin\AdminPinjamanController;
 use App\Http\Controllers\EcommerceProductController;
+use App\Http\Controllers\EcommerceAdminController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SettingsController;
 
@@ -75,10 +76,18 @@ Route::middleware('auth')->group(function () {
     Route::get('/settings/security-log', [SettingsController::class, 'securityLog'])->name('settings.security-log');
 
     Route::prefix('ecommerce')->name('ecommerce.')->group(function () {
-        Route::get('/', [EcommerceProductController::class, 'index'])->name('index');
-        Route::get('/buy/{product}', [EcommerceProductController::class, 'buy'])->name('buy');
-        Route::post('/buy/{product}', [EcommerceProductController::class, 'process'])->name('process');
-        Route::get('/success/{order}', [EcommerceProductController::class, 'success'])->name('success');
-        Route::get('/history', [EcommerceProductController::class, 'history'])->name('history');
+    Route::get('/', [EcommerceProductController::class, 'index'])->name('index');
+    Route::get('/buy/{product}', [EcommerceProductController::class, 'buy'])->name('buy');
+    Route::post('/buy/{product}', [EcommerceProductController::class, 'process'])->name('process');
+    Route::get('/success/{order}', [EcommerceProductController::class, 'success'])->name('success');
+    });
+
+    Route::middleware(AdminMiddleware::class)
+    ->prefix('ecommerce-admin')
+    ->name('ecommerce.admin.')
+    ->group(function () {
+        Route::get('/', [EcommerceAdminController::class, 'index'])->name('index');
+        Route::post('/{order}/approve', [EcommerceAdminController::class, 'approve'])->name('approve');
+        Route::post('/{order}/reject', [EcommerceAdminController::class, 'reject'])->name('reject');
     });
 });

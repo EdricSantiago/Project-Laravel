@@ -9,6 +9,7 @@ class EcommerceOrder extends Model
     protected $fillable = [
         'user_id',
         'ecommerce_product_id',
+        'transaction_id',
         'invoice_number',
         'destination_number',
         'price',
@@ -23,5 +24,10 @@ class EcommerceOrder extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function transaction()
+    {
+        return $this->belongsTo(\App\Models\Transaction::class);
     }
 }
